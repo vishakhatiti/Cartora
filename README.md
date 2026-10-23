@@ -78,12 +78,12 @@ Real values are never committed. Copy the example files and fill them in.
 
 | Key | Purpose |
 |---|---|
-| `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_HOST`, `MONGODB_DB_NAME` | MongoDB Atlas connection parts |
-| `JWT_SECRET`, `OTP_PEPPER` | Token signing and OTP hashing secrets |
-| `GOOGLE_SIGNIN_CLIENT_ID` | Verifies Google sign-in tokens |
-| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS` | Sending email through the Gmail API |
+| `MONGO_URL` | MongoDB Atlas connection string, ending in `/cartora` |
+| `JWT_SECRET` | Signs login tokens. Also used to derive the key that hashes one-time codes |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client, used for Google sign-in and the Gmail API |
+| `GOOGLE_REFRESH_TOKEN`, `EMAIL_USER` | Sending email through the Gmail API as this Gmail address |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe test mode |
-| `CLIENT_URL`, `PORT`, `NODE_ENV` | App settings |
+| `FRONTEND_URL`, `PORT`, `NODE_ENV` | App settings. On Render, `PORT` is set by the platform |
 | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID` | Public client settings |
 
 **Gmail note:** publish the Google OAuth consent screen to production before creating the refresh token. In Testing status, tokens that use Gmail scopes expire after 7 days.
@@ -122,11 +122,11 @@ Order matters: database first, then the API, then the website, then one setting 
 
 | Step | Where | What to do |
 |---|---|---|
-| 1 | MongoDB Atlas | Create a free cluster. Add a database user (username and password). Under Network Access allow `0.0.0.0/0`, because Render's free tier has no fixed IP. From Connect > Drivers copy the host only, for example `cluster0.abcde.mongodb.net`. |
-| 2 | Render | New > Blueprint, pick this repo. Render reads `render.yaml` and asks for `CLIENT_URL` (use `https://example.com` for now), `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_HOST` and `MONGODB_DB_NAME` (use `cartora`). `JWT_SECRET` and `OTP_PEPPER` are generated for you. |
+| 1 | MongoDB Atlas | Create a free cluster. Add a database user (username and password). Under Network Access allow `0.0.0.0/0`, because Render's free tier has no fixed IP. From Connect > Drivers copy the connection string and put `/cartora` before the `?`. URL-encode special characters in the password. |
+| 2 | Render | New > Blueprint, pick this repo. Render reads `render.yaml` and asks for `FRONTEND_URL` (use `https://example.com` for now) and `MONGO_URL`. `JWT_SECRET` is generated for you. |
 | 3 | Check the API | Open `https://<your-service>.onrender.com/api/health/ready`. It should show `{"status":"ok","database":"connected"}`. The first request after a sleep can take about a minute. |
 | 4 | Vercel | Add New > Project, pick this repo, set **Root Directory** to `client`, and deploy. If your Render URL is not `https://cartora-api.onrender.com`, edit `client/vercel.json` first so the `/api` rewrite points at your URL. |
-| 5 | Render | Set `CLIENT_URL` to your Vercel URL. Render redeploys. |
+| 5 | Render | Set `FRONTEND_URL` to your Vercel URL. Render redeploys. |
 | 6 | Verify | Open the Vercel URL. The System status card should say **API online - Database connected**. |
 
 | Part | Platform | Notes |

@@ -1,17 +1,14 @@
-import { env, buildMongoUri } from './config/env.js';
+import { env } from './config/env.js';
 import { connectDb, disconnectDb } from './config/db.js';
 import { createApp } from './app.js';
 
-const uri = buildMongoUri(env);
-if (!uri) {
-  console.error(
-    'MongoDB is not configured. Set MONGODB_USER, MONGODB_PASSWORD and MONGODB_HOST (see server/.env.example).',
-  );
+if (!env.MONGO_URL) {
+  console.error('MongoDB is not configured. Set MONGO_URL (see server/.env.example).');
   process.exit(1);
 }
 
 try {
-  await connectDb(uri);
+  await connectDb(env.MONGO_URL);
   console.log('MongoDB connected');
 } catch (err) {
   // Print the reason without the connection string, which contains the password.

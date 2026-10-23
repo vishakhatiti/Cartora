@@ -72,7 +72,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `carts` | userId, items[{productId, qty}] | Guests keep their cart in the browser |
 | `wishlists` | userId, productIds[] | Same merge rule as the cart |
 | `orders` | userId or guestEmail, items[], totals, status, stripeSessionId (unique), timeline[] | Webhook is idempotent on `stripeSessionId` |
-| `otps` | email, purpose, codeHash, expiresAt (TTL), attempts | Hashed with `OTP_PEPPER`; max 5 attempts |
+| `otps` | email, purpose, codeHash, expiresAt (TTL), attempts | HMAC-hashed with a key derived from `JWT_SECRET`; max 5 attempts |
 | `notifications` | userId, type, message, readAt | Created when an order is paid |
 
 Prices are stored as integer cents. The server recomputes all totals from the database; it never trusts client prices.
