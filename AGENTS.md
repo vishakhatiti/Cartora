@@ -21,6 +21,7 @@ Cartora, a MERN e-commerce marketplace. Plan: `ROADMAP.md`. Overview: `README.md
 5. Write tests for new behavior, run them, and report real results.
 6. Keep `ROADMAP.md` and `README.md` truthful: tick a box only when the feature works.
 7. Do not edit anything in `.agent-logs/`, and keep it out of `.gitignore`. Commit it with the code.
+8. One branch per feature: branch from an up-to-date `main` as `feature/<name>` (see `ROADMAP.md`), open a pull request when tests pass, then start the next feature.
 
 ## Testing
 
