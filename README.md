@@ -118,12 +118,23 @@ Tests that depend on Gmail or Stripe use mocks. Check real email delivery and a 
 
 ## Deployment
 
+Order matters: database first, then the API, then the website, then one setting back on the API. Render deploys from the `main` branch, so merge the pull requests first.
+
+| Step | Where | What to do |
+|---|---|---|
+| 1 | MongoDB Atlas | Create a free cluster. Add a database user (username and password). Under Network Access allow `0.0.0.0/0`, because Render's free tier has no fixed IP. From Connect > Drivers copy the host only, for example `cluster0.abcde.mongodb.net`. |
+| 2 | Render | New > Blueprint, pick this repo. Render reads `render.yaml` and asks for `CLIENT_URL` (use `https://example.com` for now), `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_HOST` and `MONGODB_DB_NAME` (use `cartora`). `JWT_SECRET` and `OTP_PEPPER` are generated for you. |
+| 3 | Check the API | Open `https://<your-service>.onrender.com/api/health/ready`. It should show `{"status":"ok","database":"connected"}`. The first request after a sleep can take about a minute. |
+| 4 | Vercel | Add New > Project, pick this repo, set **Root Directory** to `client`, and deploy. If your Render URL is not `https://cartora-api.onrender.com`, edit `client/vercel.json` first so the `/api` rewrite points at your URL. |
+| 5 | Render | Set `CLIENT_URL` to your Vercel URL. Render redeploys. |
+| 6 | Verify | Open the Vercel URL. The System status card should say **API online - Database connected**. |
+
 | Part | Platform | Notes |
 |---|---|---|
-| Database | MongoDB Atlas | Allow `0.0.0.0/0` in Network Access, because Render's free tier has no fixed IP |
-| Server | Render (Web Service) | Root directory `server`, add every key from `server/.env.example` |
-| Client | Vercel | Root directory `client`, a rewrite sends `/api/*` to the Render URL so cookies stay same-origin |
-| Stripe | Dashboard | Add a webhook for `checkout.session.completed` pointing at `<render-url>/api/webhooks/stripe` |
+| Database | MongoDB Atlas | Free tier is enough |
+| Server | Render Web Service | Configured by `render.yaml` (keys only, no values) |
+| Client | Vercel | `client/vercel.json` rewrites `/api/*` to Render so cookies stay same-origin |
+| Stripe | Dashboard | Added later in the checkout feature: webhook for `checkout.session.completed` at `<render-url>/api/webhooks/stripe` |
 
 ## Build record
 
