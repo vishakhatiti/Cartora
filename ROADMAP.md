@@ -27,6 +27,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 |---|---|---|
 | `feature/amazon-data-pipeline` | Build real product data from Amazon Reviews 2023 | 0 |
 | `feature/server-foundation` | Express app, Mongo connection, env validation, health check, models | 0 |
+| `feature/catalog-service` | Read-only catalog API served from `server/data/data.json` in memory: search, filters, sort, pagination, suggestions, product detail, reviews, related. **Built, tests passing; awaiting merge.** | 2 |
 | `feature/seed-database` | `npm run seed` for the generated data file | 0 |
 | `feature/auth-email-otp` | Register, email OTP, password login, login by code, forgot password | 1 |
 | `feature/auth-google-guest` | Google sign-in and guest sessions | 1 |

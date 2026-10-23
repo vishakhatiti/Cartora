@@ -4,10 +4,15 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
+import { createCatalogRouter } from './routes/catalog.js';
+import { getDefaultCatalog } from './services/catalog/catalog.js';
 import { notFound, createErrorHandler } from './middleware/errorHandler.js';
 
-/** Build the Express app. Takes validated env so tests can pass their own. */
-export function createApp(env) {
+/**
+ * Build the Express app. Takes validated env so tests can pass their own,
+ * and an optional catalog (tests pass a small fixture; production loads data.json on first use).
+ */
+export function createApp(env, { catalog } = {}) {
   const app = express();
 
   app.disable('x-powered-by');
@@ -26,6 +31,7 @@ export function createApp(env) {
   );
 
   app.use('/api/health', healthRouter);
+  app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 
   app.use(notFound);
   app.use(createErrorHandler(env));
