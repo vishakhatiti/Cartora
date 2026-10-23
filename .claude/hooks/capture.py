@@ -121,7 +121,7 @@ def new_session_file(directory, session_id, model, ts):
         f"Session: `{short}` | Project: `{PROJECT}` | Author: `{AUTHOR}`\n\n"
         "---\n"
     )
-    with open(path, "w", encoding="utf-8") as fh:
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(header)
     return path
 
@@ -163,7 +163,7 @@ def handle_prompt(data):
     content += entry
     content = update_front_matter(content, session_id, last_prompt_time=ts,
                                   total_exchanges=num, model=model)
-    with open(path, "w", encoding="utf-8") as fh:
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(content)
 
 
@@ -197,14 +197,14 @@ def handle_stop(data):
         f"model: {model or current_model(data)}\n\n"
         f"{text}\n\n"
     )
-    with open(path, "a", encoding="utf-8") as fh:
+    with open(path, "a", encoding="utf-8", newline="\n") as fh:
         fh.write(entry)
 
 
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
     try:
-        data = json.load(sys.stdin)
+        data = json.loads(sys.stdin.buffer.read().decode("utf-8"))
         if mode == "prompt":
             handle_prompt(data)
         elif mode == "stop":
