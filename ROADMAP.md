@@ -1,0 +1,91 @@
+# Cartora Roadmap (6-hour build)
+
+Goal: a working, deployed e-commerce marketplace (MERN) that improves on the Amazon experience in clarity, speed and fairness. Backend on Render, frontend on Vercel, data in MongoDB Atlas.
+
+Status legend: `[ ]` not started, `[x]` done. Update this file as work lands. Do not tick a box until it is tested.
+
+## Scope and cut line
+
+| Priority | Meaning | Items |
+|---|---|---|
+| **P0** | Must ship | Auth (register, OTP, login, forgot, Google, guest), product browse/search/detail, cart, Stripe checkout, orders, order email, seller mode (add product), reviews, deploy |
+| **P1** | Ship if on time | Wishlist, notification bell, three themes, search suggestions, order timeline |
+| **P2** | Only if hours remain | Product compare, seller analytics, real product photos via an image API |
+
+If a phase runs over by 30 minutes, drop the lowest-priority item in that phase and move on.
+
+## Timeline
+
+| Hour | Phase | Deliverables | Done when |
+|---|---|---|---|
+| 0:00-1:00 | Foundation | Express app, Mongo connection, env validation, models, `npm run seed` for `server/data/data.json`, Vite + Tailwind app shell, theme tokens | Server starts, `/api/health` is OK, seed loads 12,500 products |
+| 1:00-2:00 | Auth | Register + email OTP, password login, login by emailed code, forgot password, Google sign-in, guest session, auth middleware | All auth flows work against Atlas and send real Gmail API emails |
+| 2:00-3:00 | Catalog | Product list with filters/sort/pagination, search, product page, reviews (add, list), buyer/seller switch, seller add-product | A new product and review appear in MongoDB and in the UI |
+| 3:00-4:00 | Commerce | Cart (guest + user, merged on login), wishlist, Stripe Checkout session, webhook, orders, order email, in-app notification | A Stripe test payment creates a paid order and sends an email |
+| 4:00-5:00 | Polish + tests | Animations, hover effects, toasts, modals, skeletons, themes, responsive pass, unit + integration tests | `npm test` passes in `server/`, UI works at 360px, 768px, 1280px |
+| 5:00-6:00 | Deploy + verify | Render + Vercel deploy, Stripe webhook registered, Atlas network access, smoke test of every P0 flow, README final | Live URLs work end to end |
+
+## Data model (MongoDB)
+
+| Collection | Key fields | Notes |
+|---|---|---|
+| `users` | email (unique), passwordHash, name, googleId, isSeller, storeName, emailVerified | One account; seller mode is a flag plus store name |
+| `products` | asin (unique), title, brand, category, priceCents, deal{percent,salePriceCents}, ratingAvg, ratingCount, features[], images[], sellerId | Seeded products have `sellerId = null` (Cartora Marketplace) |
+| `reviews` | productId, userId or legacyUserId, rating, title, text, verifiedPurchase | Unique (productId, userId) for real users |
+| `carts` | userId, items[{productId, qty}] | Guests keep their cart in the browser |
+| `wishlists` | userId, productIds[] | Same merge rule as the cart |
+| `orders` | userId or guestEmail, items[], totals, status, stripeSessionId (unique), timeline[] | Webhook is idempotent on `stripeSessionId` |
+| `otps` | email, purpose, codeHash, expiresAt (TTL), attempts | Hashed with `OTP_PEPPER`; max 5 attempts |
+| `notifications` | userId, type, message, readAt | Created when an order is paid |
+
+Prices are stored as integer cents. The server recomputes all totals from the database; it never trusts client prices.
+
+## API outline
+
+| Area | Endpoints |
+|---|---|
+| Auth | `POST /api/auth/register`, `/verify-email`, `/login`, `/login-code/request`, `/login-code/verify`, `/forgot`, `/reset`, `/google`, `/guest`, `/logout`; `GET /api/auth/me` |
+| Products | `GET /api/products` (q, category, minPrice, maxPrice, rating, deals, sort, page), `GET /api/products/:id`, `GET /api/products/suggest`, `POST /api/products` (seller) |
+| Reviews | `GET /api/products/:id/reviews`, `POST /api/products/:id/reviews` |
+| Cart and wishlist | `GET/PUT /api/cart`, `GET/PUT /api/wishlist`, `POST /api/cart/merge` |
+| Checkout | `POST /api/checkout/session`, `POST /api/webhooks/stripe` |
+| Orders | `GET /api/orders`, `GET /api/orders/:id` |
+| Account | `POST /api/account/become-seller`, `GET /api/notifications`, `POST /api/notifications/read` |
+
+## Business rules
+
+- Shipping: free when the item subtotal is $50.00 or more, otherwise a flat $5.99.
+- Deals: when `deal.has_deal` is true, the sale price is charged.
+- Only users who bought a product get the "verified purchase" badge.
+- A rating update uses `newAvg = (avg * n + r) / (n + 1)`.
+- OTP codes: 6 digits, expire in 10 minutes, single use.
+
+## Testing plan
+
+| Level | Tool | Covers |
+|---|---|---|
+| Unit | Vitest | Pricing and shipping, OTP hashing, rating math, seed transform |
+| Integration | Vitest + Supertest + in-memory MongoDB | Auth flows, product queries, review rules, order creation, webhook idempotency |
+| Manual smoke | Checklist in README | Stripe test card, email delivery, responsive layouts |
+
+Tests that need the network (Gmail, Stripe) use mocks. Real services are covered only by the manual smoke test.
+
+## Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| All seeded product images are one placeholder URL | Generated artwork per category; sellers add real image URLs |
+| Gmail refresh token expires after 7 days while the consent screen is in Testing | Publish the consent screen to production before generating the token |
+| Cross-site cookies between Vercel and Render | Vercel rewrites `/api/*` to Render so the cookie stays same-origin |
+| Render free tier sleeps and is slow on first request | Show a friendly loading state; mention the cold start in the README |
+| Atlas blocks Render's IP | Allow `0.0.0.0/0` in Atlas Network Access |
+| 12,500 products slow queries | Server-side pagination and indexes on category, price, text search |
+| Review text in the data contradicts the star rating | Imported unchanged; documented as a data limitation |
+
+## Definition of done
+
+- Every P0 flow works on the deployed URLs.
+- `npm test` passes in `server/`, and the client builds with no errors.
+- No secrets in the repo; `.env.example` files list every key.
+- README, ROADMAP and CLAUDE.md match what is actually built.
+- `.agent-logs/` is committed alongside the code it produced.

@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Secrets: never commit real values (use the .env.example files instead)
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs and OS files
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# NOTE: .agent-logs/ is intentionally NOT ignored. It ships with the repo.
