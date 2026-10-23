@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import time
+from pathlib import Path
 from datetime import datetime, timezone
 
 AUTHOR = "vishakhatiti"
@@ -27,8 +28,17 @@ def now_iso():
         f"{datetime.now(timezone.utc).microsecond // 1000:03d}Z"
 
 
+def breadcrumb(message):
+    """Diagnostics outside the repo so they never ship: shows whether the hook ran at all."""
+    try:
+        with open(Path.home() / ".cartora-capture-debug.log", "a", encoding="utf-8", newline="\n") as fh:
+            fh.write(f"{now_iso()} {message}\n")
+    except Exception:
+        pass
+
+
 def log_dir():
-    root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    root = os.environ.get("CLAUDE_PROJECT_DIR") or str(Path(__file__).resolve().parents[2])
     path = os.path.join(root, ".agent-logs")
     os.makedirs(path, exist_ok=True)
     return path
@@ -203,6 +213,7 @@ def handle_stop(data):
 
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
+    breadcrumb(f"{mode} invoked cwd={os.getcwd()} project_dir={os.environ.get('CLAUDE_PROJECT_DIR')}")
     try:
         data = json.loads(sys.stdin.buffer.read().decode("utf-8"))
         if mode == "prompt":
@@ -210,6 +221,7 @@ def main():
         elif mode == "stop":
             handle_stop(data)
     except Exception as exc:  # never block the user's turn
+        breadcrumb(f"{mode} FAILED: {exc!r}")
         sys.stderr.write(f"capture: {mode} failed: {exc!r}\n")
     sys.exit(0)
 
