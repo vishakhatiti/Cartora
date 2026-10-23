@@ -4,7 +4,7 @@ import { createApp } from '../../src/app.js';
 import { parseEnv } from '../../src/config/env.js';
 
 // These tests need no database: the app is built from validated test settings.
-const env = parseEnv({ NODE_ENV: 'test', CLIENT_URL: 'http://localhost:5173' });
+const env = parseEnv({ NODE_ENV: 'test', FRONTEND_URL: 'http://localhost:5173' });
 const app = createApp(env);
 
 describe('health endpoints', () => {

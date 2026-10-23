@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+/* Dark mode is driven by the data-theme attribute so the user's choice wins over the OS setting. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Design tokens. More themes (for example Sunset) only need another block of these variables. */
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --fg: #0f172a;
+  --muted: #5b6b80;
+  --primary: #0f766e;
+  --primary-fg: #ffffff;
+  --accent: #f59e0b;
+  --line: #e2e8f0;
+  --ok: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+}
+
+[data-theme='dark'] {
+  --bg: #0a111f;
+  --surface: #111b2f;
+  --fg: #e6edf7;
+  --muted: #93a4bc;
+  --primary: #2dd4bf;
+  --primary-fg: #06201d;
+  --accent: #fbbf24;
+  --line: #22304d;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-line: var(--line);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+  body {
+    transition: none;
+  }
+}

@@ -21,7 +21,7 @@ export function createApp(env, { catalog } = {}) {
   app.set('trust proxy', 1);
 
   app.use(helmet());
-  app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+  app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
   // The Stripe webhook (added in the checkout feature) mounts its raw-body route BEFORE this.
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
