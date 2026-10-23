@@ -128,3 +128,16 @@ Tests that depend on Gmail or Stripe use mocks. Check real email delivery and a 
 ## Build record
 
 Prompts and responses from the build are recorded automatically in [`.agent-logs/`](.agent-logs) by a hook (see [CAPTURE-TEST.md](CAPTURE-TEST.md)).
+
+## Catalog API (feature/catalog-service)
+
+The JSON catalog is read-only and held in memory; MongoDB stores user data. All routes are public GET requests. Prices in the query string are dollars; responses use integer cents.
+
+| Route | Purpose |
+|---|---|
+| `/api/products` | Search with `q`, `category`, `brand`, `minPrice`, `maxPrice`, `minRating`, `deals`, `sort` (`relevance`, `price_asc`, `price_desc`, `rating`, `discount`), `page`, `pageSize` (max 48). Returns items without reviews, plus facet counts. |
+| `/api/products/:id` | Product detail with rating breakdown |
+| `/api/products/:id/reviews` | Paged reviews (`sort`: `recent`, `highest`, `lowest`) |
+| `/api/products/:id/related` | Same-category products at a similar price |
+| `/api/categories` | Categories with product counts |
+| `/api/search/suggestions?q=` | Autocomplete for products and categories |
