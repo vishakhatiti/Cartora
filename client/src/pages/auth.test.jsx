@@ -57,7 +57,7 @@ describe('sign in with a password', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(api.login).toHaveBeenCalledWith({ email: 'asha@example.com', password: 'a-good-password' });
     expect(await screen.findByText('Welcome back, Asha.')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Shop smarter.');
+    expect(await screen.findByRole('heading', { level: 1, name: /shop smarter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /account menu/i })).toBeInTheDocument();
   });
 
