@@ -17,6 +17,10 @@ services:
         value: "22"
       - key: NODE_ENV
         value: production
+      # The catalogue (12,000 products) needs about 200 MB of heap to load. Capping the heap makes Node
+      # collect garbage earlier, which keeps the peak well under the free plan's 512 MB.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=300
       # You enter these when you create the Blueprint:
       - key: FRONTEND_URL # your Vercel URL, for example https://cartora.vercel.app
         sync: false

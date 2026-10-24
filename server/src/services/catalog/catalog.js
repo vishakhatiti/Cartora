@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { normalizeProduct, toSummary } from './normalize.js';
-import { adaptCatalogueV2, isCatalogueV2 } from './formats.js';
+import { isCatalogueV2, iterateCatalogueV2 } from './formats.js';
 
 export const DEFAULT_PAGE_SIZE = 24;
 export const MAX_PAGE_SIZE = 48;
@@ -220,13 +220,18 @@ export function loadStockImages(path = STOCK_IMAGES_PATH) {
   return parsed && typeof parsed.categories === 'object' ? parsed : null;
 }
 
-export function loadCatalogFile(path, { stockImages = null } = {}) {
+/** Read and parse in their own scope so the file bytes and the JSON text can be freed before indexing. */
+function parseCatalogFile(path) {
   const bytes = readFileSync(path);
   const text = path.endsWith('.gz') ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8');
-  const parsed = JSON.parse(text);
+  return JSON.parse(text);
+}
+
+export function loadCatalogFile(path, { stockImages = null } = {}) {
+  const parsed = parseCatalogFile(path);
   // Two layouts are accepted: a plain array of dataset records, or the catalogue.json.gz object.
-  const records = isCatalogueV2(parsed) ? adaptCatalogueV2(parsed) : parsed;
-  if (!Array.isArray(records)) throw new Error(`${path} must contain an array of products`);
+  const records = isCatalogueV2(parsed) ? iterateCatalogueV2(parsed, { release: true }) : parsed;
+  if (!Array.isArray(parsed) && !isCatalogueV2(parsed)) throw new Error(`${path} must contain an array of products`);
   return createCatalog(records, { stockImages });
 }
 
