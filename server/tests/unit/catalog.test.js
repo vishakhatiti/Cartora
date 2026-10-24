@@ -156,3 +156,30 @@ describe('detail, reviews, related, suggestions', () => {
     expect(catalog.suggest('   ')).toEqual({ products: [], categories: [] });
   });
 });
+
+describe('stock images for products without their own photo', () => {
+  const photo = (id) => ({ id, thumb: `t${id}`, large: `l${id}`, alt: 'a', photographer: 'Ann', photographerUrl: 'u', pageUrl: 'p' });
+  const stockImages = { categories: { electronics: [photo(1), photo(2), photo(3)], 'home-and-kitchen': [photo(9)] } };
+  const withStock = createCatalog(rawFixture, { stockImages });
+
+  it('labels kinds honestly: real photo, stock photo, or none', () => {
+    const byId = (id) => withStock.getDetail(id);
+    expect(byId('A2').imageKind).toBe('real'); // has an Amazon image, so no stock photo is added
+    expect(byId('A2').stockImage).toBeNull();
+    expect(byId('A3').imageKind).toBe('stock');
+    expect(byId('A3').hasRealImage).toBe(false); // a stock photo never counts as a real product photo
+    expect(byId('A3').stockImage.credit).toEqual({ photographer: 'Ann', photographerUrl: 'u', pageUrl: 'p' });
+    expect(byId('A4').imageKind).toBe('none'); // no photos for toys-and-games
+  });
+
+  it('is deterministic and included in listings', () => {
+    const again = createCatalog(rawFixture, { stockImages });
+    expect(again.getDetail('A3').stockImage).toEqual(withStock.getDetail('A3').stockImage);
+    const [listed] = withStock.search({ category: 'electronics' }).items;
+    expect(listed.stockImage.large).toMatch(/^l\d$/);
+  });
+
+  it('works without any stock image file', () => {
+    expect(catalog.getDetail('A3').imageKind).toBe('none');
+  });
+});

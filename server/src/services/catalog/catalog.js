@@ -9,6 +9,7 @@ export const SORTS = ['relevance', 'price_asc', 'price_desc', 'rating', 'discoun
 export const REVIEW_SORTS = ['recent', 'highest', 'lowest'];
 
 export const DATA_PATH = fileURLToPath(new URL('../../../data/data.json', import.meta.url));
+export const STOCK_IMAGES_PATH = fileURLToPath(new URL('../../../data/category-images.json', import.meta.url));
 export const GZ_PATH = fileURLToPath(new URL('../../../data/catalogue.json.gz', import.meta.url));
 
 const tokenize = (text) => String(text ?? '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
@@ -33,11 +34,23 @@ function countBy(items, keyFn) {
   return counts;
 }
 
+/** Small stable string hash (FNV-1a) so a product always gets the same stock photo. */
+export function hashString(text) {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
+
 /**
  * Read-only, in-memory catalog built from the dataset records.
- * The JSON file stays the source of truth; nothing here is written to MongoDB.
+ * stockImages (optional) is the parsed category-images.json: generic category photos used for products
+ * that have no photo of their own. They are labelled imageKind 'stock' because they do not show the product.
  */
-export function createCatalog(rawProducts) {
+export function createCatalog(rawProducts, { stockImages = null } = {}) {
+  const stockByCategory = stockImages?.categories ?? {};
   const products = [];
   const byId = new Map();
   let skipped = 0;
@@ -48,8 +61,17 @@ export function createCatalog(rawProducts) {
       skipped += 1;
       continue;
     }
+    const pool = stockByCategory[product.category.slug];
+    const stock = !product.hasRealImage && Array.isArray(pool) && pool.length
+      ? pool[hashString(product.id) % pool.length]
+      : null;
     const indexed = {
       ...product,
+      imageKind: product.hasRealImage ? 'real' : stock ? 'stock' : 'none',
+      stockImage: stock && {
+        thumb: stock.thumb, large: stock.large, alt: stock.alt,
+        credit: { photographer: stock.photographer, photographerUrl: stock.photographerUrl, pageUrl: stock.pageUrl },
+      },
       titleLower: product.title.toLowerCase(),
       titleWords: tokenize(product.title),
       // Everything a shopper can search on, built once.
@@ -191,12 +213,18 @@ export function createCatalog(rawProducts) {
 let defaultCatalog = null;
 
 /** Read a catalog file: plain .json or gzip-compressed .json.gz. Throws a clear error if unusable. */
-export function loadCatalogFile(path) {
+export function loadStockImages(path = STOCK_IMAGES_PATH) {
+  if (!existsSync(path)) return null;
+  const parsed = JSON.parse(readFileSync(path, 'utf8'));
+  return parsed && typeof parsed.categories === 'object' ? parsed : null;
+}
+
+export function loadCatalogFile(path, { stockImages = null } = {}) {
   const bytes = readFileSync(path);
   const text = path.endsWith('.gz') ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8');
   const parsed = JSON.parse(text);
   if (!Array.isArray(parsed)) throw new Error(`${path} must contain an array of products`);
-  return createCatalog(parsed);
+  return createCatalog(parsed, { stockImages });
 }
 
 /**
@@ -205,7 +233,7 @@ export function loadCatalogFile(path) {
  */
 export function getDefaultCatalog() {
   if (!defaultCatalog) {
-    defaultCatalog = loadCatalogFile(existsSync(GZ_PATH) ? GZ_PATH : DATA_PATH);
+    defaultCatalog = loadCatalogFile(existsSync(GZ_PATH) ? GZ_PATH : DATA_PATH, { stockImages: loadStockImages() });
   }
   return defaultCatalog;
 }

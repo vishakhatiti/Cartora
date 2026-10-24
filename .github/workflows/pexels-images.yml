@@ -1,0 +1,31 @@
+name: Fetch Pexels category images
+
+# Manual run only. Uses the PEXELS_API_KEY repository secret (Settings > Secrets and variables > Actions).
+# Writes server/data/category-images.json to the branch bot/pexels-images; open a pull request from it.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Python tests
+        run: python -m unittest discover -s server/scripts/tests
+      - name: Fetch images
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python server/scripts/fetch_pexels_images.py
+      - name: Push result to bot/pexels-images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/data/category-images.json
+          git commit -m "Add Pexels category images"
+          git push --force origin HEAD:refs/heads/bot/pexels-images

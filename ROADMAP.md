@@ -28,6 +28,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/amazon-data-pipeline` | `build_catalog.py` samples downloaded Amazon Reviews 2023 files into `catalogue.json.gz`; the server loads it when present. **Script and loader built; the real file is not generated yet.** | 0 |
 | `feature/server-foundation` | Express app, Mongo connection, env validation, health check, models | 0 |
 | `feature/catalog-service` | Read-only catalog API served from `server/data/data.json` in memory: search, filters, sort, pagination, suggestions, product detail, reviews, related. **Built, tests passing; awaiting merge.** | 2 |
+| `feature/pexels-images` | `fetch_pexels_images.py` and a manual workflow fetch category stock photos; the catalog serves them as `imageKind: stock`. **Code built and tested; photos not fetched until the key is added.** | 2 |
 | `feature/seed-database` | `npm run seed` for the generated data file | 0 |
 | `feature/auth-email-otp` | Register, email OTP, password login, login by code, forgot password | 1 |
 | `feature/auth-google-guest` | Google sign-in and guest sessions | 1 |
