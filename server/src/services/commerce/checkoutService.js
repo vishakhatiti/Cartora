@@ -117,6 +117,19 @@ export function createCheckoutService({ store, carts, provider, getCatalog, onSt
       return { session: sessionView(await store.findSession(sessionId), provider), order: orderView(order) };
     },
 
+    /**
+     * Called by the verified payment webhook. Refuses to mark anything paid unless the amount the processor says it
+     * collected is exactly what the server priced, so a tampered or mismatched session can never become an order.
+     */
+    async confirmExternalPayment(sessionId, { amountCents, currency }) {
+      const session = await store.findSession(sessionId);
+      if (!session) throw new AppError(404, 'Checkout not found.', 'NOT_FOUND');
+      if (amountCents !== session.totalCents || String(currency).toUpperCase() !== session.currency.toUpperCase()) {
+        throw new AppError(409, 'The amount paid does not match this checkout.', 'AMOUNT_MISMATCH');
+      }
+      return this.completeSession(sessionId, { outcome: 'succeeded' });
+    },
+
     async getOrder(user, id) {
       const order = await store.findOrder(id);
       if (!order || order.userId !== user.id) throw new AppError(404, 'Order not found.', 'NOT_FOUND');

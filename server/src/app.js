@@ -10,6 +10,7 @@ import { createAddressRouter } from './routes/addresses.js';
 import { createWishlistRouter } from './routes/wishlist.js';
 import { createCartRouter } from './routes/cart.js';
 import { createCheckoutRouter } from './routes/checkout.js';
+import { createStripeWebhookRouter } from './routes/stripeWebhook.js';
 import { createOrdersRouter } from './routes/orders.js';
 import { createSellerRouter } from './routes/seller.js';
 import { createCatalogRouter } from './routes/catalog.js';
@@ -41,7 +42,10 @@ export function createApp(env, { catalog, authService, commerce: commerceOverrid
 
   app.use(helmet());
   app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
-  // The Stripe webhook (added in the checkout feature) mounts its raw-body route BEFORE this.
+  // The Stripe webhook needs the raw request body to verify the signature, so it is mounted BEFORE express.json().
+  const getCatalog = () => catalog ?? getDefaultCatalog();
+  const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env), mailer: createMailer(env), appUrl: env.FRONTEND_URL });
+  if (!commerce.provider.isDemo) app.use('/api/webhooks/stripe', createStripeWebhookRouter({ checkout: commerce.checkout }));
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
   app.use(
@@ -61,8 +65,6 @@ export function createApp(env, { catalog, authService, commerce: commerceOverrid
 
   app.use('/api/health', healthRouter);
   app.use('/api/auth', createAuthRouter({ authService: auth, env, secret: env.JWT_SECRET }));
-  const getCatalog = () => catalog ?? getDefaultCatalog();
-  const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env), mailer: createMailer(env), appUrl: env.FRONTEND_URL });
   app.use('/api/cart', createCartRouter({ carts: commerce.carts }));
   app.use('/api/notifications', createNotificationsRouter({ notifications: commerce.notifications }));
   app.use('/api/support', createSupportRouter({ support: commerce.support }));

@@ -33,7 +33,7 @@ export default function OrderPage() {
       {o.payment.demo && <div className="mt-6"><DemoBanner /></div>}
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
         <section aria-labelledby="od-h" className="space-y-5 rounded-3xl border border-line-strong bg-surface p-6">
-          <h2 id="od-h" className="text-2xl">{state?.justPaid ? 'Thank you. Your demo order is placed.' : 'Order details'}</h2>
+          <h2 id="od-h" className="text-2xl">{state?.justPaid ? (o.payment.demo ? 'Thank you. Your demo order is placed.' : 'Thank you. Your order is placed.') : 'Order details'}</h2>
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div><dt className="font-semibold text-muted">Order number</dt><dd className="mt-0.5 font-mono font-bold">{o.orderNumber}</dd></div>
             <div><dt className="font-semibold text-muted">Status</dt><dd className="mt-0.5 font-semibold capitalize">{o.status}</dd></div>

@@ -141,6 +141,22 @@ Stripe test access is not available yet, so checkout runs on a clearly labelled 
 
 **Verified:** server tests (pricing, store contract, routes including access control, idempotency and failure paths), client tests with a fake API, and the whole flow in a browser on a local server with in-memory storage and the real catalogue (guest cart, merge, failed payment, retry, successful payment, order page, mobile width). **Not verified:** the live site, the new Mongo collections against Atlas (the Mongo contract tests run in CI only), order emails (not built), an order list page and saved addresses (not built).
 
+## Stripe Checkout (feature/stripe-checkout)
+
+Set `PAYMENT_PROVIDER=stripe` with a **test-mode** `STRIPE_SECRET_KEY` (starts with `sk_test_`) and `STRIPE_WEBHOOK_SECRET` on the server. Without both, the server refuses to start in Stripe mode. The default stays the labelled demo provider.
+
+| Step | What happens |
+|---|---|
+| Start | The server prices the cart and creates a Stripe Checkout Session (items, shipping, `client_reference_id` = our session id). The buyer pays on Stripe's page; Cartora never sees card details. |
+| Return | `/checkout/return/:id` only asks the server for the session status. Arriving there is not proof of payment. |
+| Webhook | `POST /api/webhooks/stripe` verifies Stripe's signature on the raw body, checks the amount and currency equal what the server priced, then calls the same `completeSession()` step. Repeated events create one order. |
+| Expired | `checkout.session.expired` closes the session; it can never become an order afterwards. |
+| Sold out | If stock ran out between starting and paying, no order is created and the payment is refunded through Stripe. |
+
+**Set-up in Stripe (test mode):** add a webhook endpoint `https://<api-host>/api/webhooks/stripe` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and `checkout.session.expired`; copy its signing secret into `STRIPE_WEBHOOK_SECRET`. Test card: `4242 4242 4242 4242`, any future expiry, any CVC.
+
+**Verified:** server tests with a fake Stripe network and real signature checking (bad signature, replayed events, wrong amount, unknown session, expiry, refund on sold out, retry on our own failure); client tests for the return page. **Not verified:** a real payment against Stripe's test environment, the refund call against Stripe, and the live deployment.
+
 ## Website (feature/client-shell-themes)
 
 Built so far: the page shell, three themes, toast messages, the sign-in, register and forgot-password pages, and the storefront (home, search, product pages). The cart, demo checkout and order confirmation are built (see *Demo payments*). Listings and wishlist are not built yet.

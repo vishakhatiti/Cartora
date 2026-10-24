@@ -48,7 +48,8 @@ describe('payment provider selection', () => {
     expect(provider).toMatchObject({ name: 'demo', isDemo: true, label: 'Demo Mode — No Real Money Charged' });
   });
 
-  it('refuses stripe until it is implemented, instead of pretending', () => {
-    expect(() => createPaymentProvider({ PAYMENT_PROVIDER: 'stripe' })).toThrow(/not implemented/);
+  it('refuses to start stripe without its key, and rejects unknown providers', () => {
+    expect(() => createPaymentProvider({ PAYMENT_PROVIDER: 'stripe' })).toThrow(/STRIPE_SECRET_KEY/);
+    expect(() => createPaymentProvider({ PAYMENT_PROVIDER: 'paypal' })).toThrow(/Unknown PAYMENT_PROVIDER/);
   });
 });
