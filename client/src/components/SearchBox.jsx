@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
+import { useRemote } from '../hooks/useRemote.js';
 
 const DEBOUNCE_MS = 200;
 
@@ -9,6 +10,8 @@ export default function SearchBox() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [text, setText] = useState(params.get('q') ?? '');
+  const [category, setCategory] = useState(params.get('category') ?? '');
+  const cats = useRemote((signal) => catalogApi.categories(signal), []);
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState([]);
   const [active, setActive] = useState(-1);
@@ -45,7 +48,11 @@ export default function SearchBox() {
     e.preventDefault();
     const q = text.trim();
     if (active >= 0 && options[active]) return go(options[active].to);
-    return go(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
+    const query = new URLSearchParams();
+    if (q) query.set('q', q);
+    if (category) query.set('category', category);
+    const qs = query.toString();
+    return go(qs ? `/products?${qs}` : '/products');
   };
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setActive((i) => Math.min(i + 1, options.length - 1)); }
@@ -55,7 +62,18 @@ export default function SearchBox() {
   const showList = open && options.length > 0;
 
   return (
-    <form role="search" onSubmit={submit} ref={box} className="relative w-full">
+    <form role="search" onSubmit={submit} ref={box} className="relative flex w-full items-stretch">
+      <label htmlFor="search-category" className="sr-only">Search category</label>
+      <select
+        id="search-category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="hidden max-w-36 shrink-0 rounded-l-xl border border-r-0 border-line-strong bg-pale px-2 text-sm font-medium sm:block"
+      >
+        <option value="">All</option>
+        {(cats.data?.categories ?? []).map((c) => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+      </select>
+      <div className="relative flex-1">
       <label htmlFor="site-search" className="sr-only">Search products</label>
       <input
         id="site-search"
@@ -71,9 +89,9 @@ export default function SearchBox() {
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
         placeholder="Search 12,000 products"
-        className="w-full rounded-full border border-line bg-surface py-2 pl-4 pr-20 text-sm placeholder:text-muted focus:border-primary"
+        className="w-full rounded-xl border border-line-strong bg-cream py-2.5 pl-4 pr-20 text-sm placeholder:text-muted focus:border-primary sm:rounded-l-none"
       />
-      <button type="submit" className="absolute right-1 top-1 rounded-full bg-primary px-3.5 py-1 text-sm font-semibold text-primary-fg">Search</button>
+      <button type="submit" className="absolute right-1 top-1 bottom-1 rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-fg">Search</button>
       {showList && (
         <ul id={listId} role="listbox" className="absolute left-0 right-0 top-full z-40 mt-2 max-h-96 overflow-auto rounded-2xl border border-line bg-surface p-1 shadow-xl">
           {options.map((o, i) => (
@@ -92,6 +110,7 @@ export default function SearchBox() {
           ))}
         </ul>
       )}
+      </div>
     </form>
   );
 }

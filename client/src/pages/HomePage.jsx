@@ -30,7 +30,7 @@ export default function HomePage() {
             {(cats.data?.categories ?? Array.from({ length: 8 }, (_, i) => ({ slug: `s${i}`, skeleton: true }))).map((c) => (
               <li key={c.slug}>
                 {c.skeleton ? <div className="skeleton h-16 rounded-2xl" /> : (
-                  <Link to={`/products?category=${c.slug}`} className="flex h-16 flex-col justify-center rounded-2xl border border-line bg-surface px-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary">
+                  <Link to={`/products?category=${c.slug}`} className="flex min-h-16 flex-col justify-center rounded-2xl py-2 border border-line bg-surface px-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary">
                     <span className="font-semibold">{c.label}</span>
                     <span className="text-xs text-muted">{formatCount(c.count)} products</span>
                   </Link>

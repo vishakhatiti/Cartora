@@ -9,26 +9,26 @@ beforeEach(() => {
 });
 
 describe('ThemeSwitcher', () => {
-  it('offers the three themes and marks the active one', () => {
+  it('offers the two themes and marks the active one', () => {
     render(<ThemeSwitcher />);
     const radios = screen.getAllByRole('radio');
-    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual(['Cream theme', 'Espresso theme', 'Sage theme']);
-    expect(screen.getByRole('radio', { name: 'Cream theme' })).toBeChecked();
+    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual(['Ivory theme', 'Night theme']);
+    expect(screen.getByRole('radio', { name: 'Ivory theme' })).toBeChecked();
   });
 
   it('applies and remembers the chosen theme', async () => {
     render(<ThemeSwitcher />);
-    await userEvent.click(screen.getByRole('radio', { name: 'Sage theme' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'sage');
-    expect(localStorage.getItem('cartora-theme')).toBe('sage');
-    expect(screen.getByRole('radio', { name: 'Sage theme' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Cream theme' })).not.toBeChecked();
+    await userEvent.click(screen.getByRole('radio', { name: 'Night theme' }));
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    expect(localStorage.getItem('cartora-theme')).toBe('dark');
+    expect(screen.getByRole('radio', { name: 'Night theme' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Ivory theme' })).not.toBeChecked();
   });
 
   it('still switches when storage is blocked', async () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
     render(<ThemeSwitcher />);
-    await userEvent.click(screen.getByRole('radio', { name: 'Espresso theme' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Night theme' }));
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     vi.restoreAllMocks();
   });

@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Cartora: a marketplace where one account can both buy and sell." />
-    <meta name="theme-color" content="#a84a22" />
+    <meta name="theme-color" content="#214e3d" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Cartora</title>
     <script>
       // Apply the saved or system theme before first paint so the page never flashes the wrong colors.
       (function () {
-        var themes = ['light', 'dark', 'sage'];
+        var themes = ['light', 'dark'];
         try {
           var saved = localStorage.getItem('cartora-theme');
           var theme = themes.indexOf(saved) > -1 ? saved : 'light';

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cartora">
-  <rect width="64" height="64" rx="14" fill="#a84a22"/>
+  <rect width="64" height="64" rx="14" fill="#214e3d"/>
   <path d="M14 20h6l5 18h20l5-14H24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="28" cy="47" r="3.5" fill="#f59e0b"/>
-  <circle cx="42" cy="47" r="3.5" fill="#f59e0b"/>
+  <circle cx="28" cy="47" r="3.5" fill="#c6a66b"/>
+  <circle cx="42" cy="47" r="3.5" fill="#c6a66b"/>
 </svg>
