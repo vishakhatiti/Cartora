@@ -84,6 +84,42 @@ About 11% of products have no reviews. Photos are loaded from Amazon's servers, 
 
 **Licence:** the dataset page we checked states no licence. Check the project's terms before relying on it for anything beyond this project.
 
+## Sign-in (feature/auth-email-otp)
+
+| Route | What it does |
+|---|---|
+| `POST /api/auth/register` | Creates an unverified account and emails a 6-digit code. Always answers 202, so it does not reveal which emails exist. |
+| `POST /api/auth/verify-email` | Checks the code, verifies the email and signs in. |
+| `POST /api/auth/resend-verification` | Sends a new verification code. |
+| `POST /api/auth/login` | Email and password. Unverified accounts get 403 `EMAIL_NOT_VERIFIED`. |
+| `POST /api/auth/login-code/request` and `/verify` | Sign in with an emailed code instead of a password. |
+| `POST /api/auth/forgot` and `/reset` | Emails a reset code, then sets a new password and signs out every older session. |
+| `POST /api/auth/logout`, `GET /api/auth/me` | Clears the cookie; returns the signed-in user. |
+
+| Rule | Value |
+|---|---|
+| Session | JWT in an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production), valid 7 days |
+| Passwords | scrypt (N=32768, r=8, p=3) with a random salt; 8 to 128 characters |
+| One-time codes | 6 digits, valid 10 minutes, single use, 5 attempts, one new code per 60 seconds. Stored as an HMAC keyed from `JWT_SECRET`, never in plain text. |
+| Limits per IP | 20 credential attempts and 10 code requests per 15 minutes on `/api/auth` |
+| Email | Gmail API with an OAuth2 refresh token. In development without Google keys, codes are printed in the server console. In production without them, the API refuses to send. |
+
+**Not built yet:** Google sign-in and guest mode (`feature/auth-google-guest`). Only logins covered by the automated tests are claimed to work; real Gmail delivery has not been tried.
+
+## MongoDB Atlas free tier (512 MB)
+
+| Choice | Why it matters |
+|---|---|
+| The 12,000-product catalogue stays in a file, not in MongoDB | Keeps the database for user data only |
+| One-time codes are deleted automatically 10 minutes after they expire (TTL index), and only one code exists per email and purpose | They cannot pile up |
+| Unverified sign-ups delete themselves after 3 days (TTL index on `purgeAt`) | Abandoned registrations cannot fill the database |
+| Carts and wishlists will store product ids and quantities only, never copies of product data | Keeps documents small |
+| Rate limits on sign-up and code requests | Stops bulk account creation |
+
+Check usage in Atlas under Database > Metrics. If it nears the limit, the first things to prune are old notifications and old orders.
+
+**Tests:** `npm test` runs the auth tests against an in-memory store. In CI the same contract tests also run against a real MongoDB (set `MONGO_TEST_URL` to run them yourself).
+
 ## Environment variables
 
 Real values are never committed. Copy the example files and fill them in.
