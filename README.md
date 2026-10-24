@@ -16,7 +16,7 @@ This compares design choices, not scale. Amazon is a mature global platform; Car
 | Feature | Amazon | Cartora |
 |---|---|---|
 | Buyer and seller | Seller Central is a separate registration | One account, Buying / Selling switch in the header |
-| Browsing without an account | Yes | Yes: browse, search and fill a cart as a guest; sign in to check out (the cart is kept and merged) |
+| Browsing without an account | Yes | Yes: browse and search as a guest. Adding to the cart, wishlist and checkout need a sign-in. |
 | Sign-in | Password-based | Password, emailed one-time code, or Google |
 | Sponsored results | Search includes sponsored listings | None |
 | Deals and discounts | Shown | None shown: the dataset has no real sale prices, so none are invented |
@@ -33,7 +33,7 @@ This compares design choices, not scale. Amazon is a mature global platform; Car
 |---|---|
 | Trending, Best sellers, New releases | Dashboard (products, orders to ship, sales) |
 | Search, category filters, product pages with real reviews | Add and edit products, set price and stock |
-| Cart (guest or account), wishlist | Orders containing your items, mark shipped |
+| Cart and wishlist (account required) | Orders containing your items, mark shipped |
 | Saved addresses, checkout, order list and details | Bell notification for each new order |
 | Customer service form | Sees only your items and the ship-to address, never the buyer's email |
 | Notification bell, light and dark themes | Seller listings appear in search and on product pages |

@@ -27,29 +27,48 @@ async function fillAddress(over = {}) {
   await userEvent.type(country, v.country);
 }
 
-describe('cart for guests', () => {
-  it('adds from the product page, shows the badge, and prices through the server quote', async () => {
+describe('cart needs an account', () => {
+  it('sends a visitor who is not signed in to sign in, and changes nothing', async () => {
     stubProduct();
     const commerce = fakeCommerce();
     renderApp({ route: '/product/B0TEST0001', commerce });
     await userEvent.click(await screen.findByRole('button', { name: 'Add to cart' }));
+    expect(await screen.findByRole('heading', { name: /welcome back|sign in/i })).toBeInTheDocument();
+    expect(commerce.setQuantity).not.toHaveBeenCalled();
+    expect(localStorage.getItem('cartora-cart')).toBeNull();
+  });
+
+  it('shows a sign-in prompt, not a cart, to a visitor who is not signed in', async () => {
+    renderApp({ route: '/cart' });
+    expect(await screen.findByRole('heading', { name: 'Sign in to see your cart' })).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Cart, \d+ item/ })).not.toBeInTheDocument();
+  });
+
+  it('discards a browser cart left behind by an older version, and never merges it', async () => {
+    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 1 }]));
+    const commerce = fakeCommerce();
+    renderApp({ route: '/cart', commerce });
+    await screen.findByRole('heading', { name: 'Sign in to see your cart' });
+    expect(localStorage.getItem('cartora-cart')).toBeNull();
+    expect(commerce.quote).not.toHaveBeenCalled();
+  });
+
+  it('lets a signed-in customer add from the product page and shows the badge', async () => {
+    stubProduct();
+    const commerce = fakeCommerce();
+    renderApp({ route: '/product/B0TEST0001', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: 'Add to cart' }));
     expect(await screen.findByText('Added 1 to your cart.')).toBeInTheDocument();
-    expect(JSON.parse(localStorage.getItem('cartora-cart'))).toEqual([{ productId: 'B0TEST0001', qty: 1 }]);
-    expect(commerce.quote).toHaveBeenLastCalledWith([{ productId: 'B0TEST0001', qty: 1 }]);
+    expect(commerce.setQuantity).toHaveBeenCalledWith('B0TEST0001', 1);
     expect(await screen.findByRole('link', { name: 'Cart, 1 item' })).toBeInTheDocument();
   });
 
-  it('stores only ids and quantities, never prices', async () => {
-    stubProduct();
-    renderApp({ route: '/product/B0TEST0001' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Add to cart' }));
-    await screen.findByText('Added 1 to your cart.');
-    expect(localStorage.getItem('cartora-cart')).not.toMatch(/price|cents|total/i);
-  });
-
   it('changes quantity and removes lines, with totals from the server', async () => {
-    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 1 }, { productId: 'B0TEST0002', qty: 1 }]));
-    renderApp({ route: '/cart' });
+    const commerce = fakeCommerce();
+    await commerce.setQuantity('B0TEST0001', 1);
+    await commerce.setQuantity('B0TEST0002', 1);
+    renderApp({ route: '/cart', api: signedIn(), commerce });
     const list = await screen.findByRole('list', { name: 'Items in your cart' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
     const summary = screen.getByRole('complementary');
@@ -59,44 +78,15 @@ describe('cart for guests', () => {
     expect(within(screen.getByRole('complementary')).getByText('$5.99')).toBeInTheDocument(); // $12.00 pays shipping
   });
 
-  it('shows an empty state and sends a guest to sign in at checkout', async () => {
-    renderApp({ route: '/cart' });
+  it('shows an empty cart for a signed-in customer', async () => {
+    renderApp({ route: '/cart', api: signedIn() });
     expect(await screen.findByRole('heading', { name: 'Your cart is empty' })).toBeInTheDocument();
   });
 
-  it('asks a guest to sign in before checking out', async () => {
-    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 1 }]));
-    renderApp({ route: '/cart' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Sign in to check out' }));
-    expect(await screen.findByRole('heading', { name: /welcome back|sign in/i })).toBeInTheDocument();
-  });
-
-  it('shows an error and keeps the cart when the server cannot quote', async () => {
-    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 1 }]));
-    const commerce = fakeCommerce({ quote: vi.fn().mockRejectedValue(new ApiError(500, 'SERVER_ERROR', 'Something went wrong.')) });
-    renderApp({ route: '/cart', commerce });
+  it('shows an error when the server cannot load the cart', async () => {
+    const commerce = fakeCommerce({ getCart: vi.fn().mockRejectedValue(new ApiError(500, 'SERVER_ERROR', 'Something went wrong.')) });
+    renderApp({ route: '/cart', api: signedIn(), commerce });
     expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument();
-    expect(localStorage.getItem('cartora-cart')).toContain('B0TEST0001');
-  });
-});
-
-describe('guest cart merge on sign-in', () => {
-  it('moves the browser cart to the account and clears it only after the server confirms', async () => {
-    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 2 }]));
-    const commerce = fakeCommerce();
-    renderApp({ route: '/cart', api: signedIn(), commerce });
-    expect(await screen.findByText('Your browser cart was added to your account.')).toBeInTheDocument();
-    expect(commerce.merge).toHaveBeenCalledWith([{ productId: 'B0TEST0001', qty: 2 }]);
-    expect(localStorage.getItem('cartora-cart')).toBeNull();
-    expect(await screen.findByRole('link', { name: 'Cart, 2 items' })).toBeInTheDocument();
-  });
-
-  it('keeps the browser cart when the merge fails', async () => {
-    localStorage.setItem('cartora-cart', JSON.stringify([{ productId: 'B0TEST0001', qty: 1 }]));
-    const commerce = fakeCommerce({ merge: vi.fn().mockRejectedValue(new ApiError(500, 'SERVER_ERROR', 'down')) });
-    renderApp({ route: '/cart', api: signedIn(), commerce });
-    expect(await screen.findByText(/still saved on this device/i)).toBeInTheDocument();
-    expect(localStorage.getItem('cartora-cart')).toContain('B0TEST0001');
   });
 });
 
