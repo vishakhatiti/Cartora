@@ -84,6 +84,18 @@ Tests: `cd server/scripts && python3 -m unittest discover -s tests`.
 
 **Licence:** the dataset page we checked states no licence. Check the terms on the project site before publishing the derived file in a public repository.
 
+## Product images
+
+| Source | When it applies | How the website labels it |
+|---|---|---|
+| Amazon-hosted photo of the product | Products from `catalogue.json.gz` (`imageKind: "real"`) | Shown as the product photo |
+| Pexels stock photo for the category | Products with no photo of their own, once `server/data/category-images.json` exists (`imageKind: "stock"`) | Must be labelled "Illustrative image", with a "Photos provided by Pexels" link and the photographer credit |
+| Generated artwork | No photo available (`imageKind: "none"`), or any image that fails to load | Drawn by the website |
+
+Pexels photos show the category (for example a kitchen scene), not the exact product. Each product always gets the same photo, chosen from its id.
+
+To fetch them: add your Pexels key as a GitHub secret named `PEXELS_API_KEY` (Settings > Secrets and variables > Actions), then run the **Fetch Pexels category images** workflow from the Actions tab. It uses about 84 requests, under Pexels' default limit of 200 per hour, and pushes `server/data/category-images.json` to the branch `bot/pexels-images`. Pexels' guidelines require a prominent link to Pexels and photographer credit where possible. We did not find a stated rule on hotlinking, so the site links to Pexels-hosted images as the API returns them.
+
 ## Environment variables
 
 Real values are never committed. Copy the example files and fill them in.
