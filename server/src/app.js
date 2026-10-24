@@ -6,13 +6,20 @@ import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
 import { createCatalogRouter } from './routes/catalog.js';
 import { getDefaultCatalog } from './services/catalog/catalog.js';
+import { createAuthRouter } from './routes/auth.js';
+import { loadUser } from './middleware/auth.js';
+import { createAuthService } from './services/auth/authService.js';
+import { createMongoStore } from './services/auth/mongoStore.js';
+import { createPasswordHasher } from './services/auth/passwords.js';
+import { createMailer } from './services/mail/mailer.js';
 import { notFound, createErrorHandler } from './middleware/errorHandler.js';
 
 /**
  * Build the Express app. Takes validated env so tests can pass their own,
- * and an optional catalog (tests pass a small fixture; production loads data.json on first use).
+ * an optional catalog (tests pass a small fixture; production loads the catalogue file on first use),
+ * and an optional auth service (tests pass one built on an in-memory store).
  */
-export function createApp(env, { catalog } = {}) {
+export function createApp(env, { catalog, authService } = {}) {
   const app = express();
 
   app.disable('x-powered-by');
@@ -30,7 +37,17 @@ export function createApp(env, { catalog } = {}) {
     rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false }),
   );
 
+  // JWT_SECRET is optional in development; without it the auth routes answer 503 instead of crashing the app.
+  const auth = authService ?? createAuthService({
+    store: createMongoStore(),
+    mailer: createMailer(env),
+    hasher: createPasswordHasher(),
+    secret: env.JWT_SECRET,
+  });
+  app.use(loadUser({ authService: auth, secret: env.JWT_SECRET }));
+
   app.use('/api/health', healthRouter);
+  app.use('/api/auth', createAuthRouter({ authService: auth, env, secret: env.JWT_SECRET }));
   app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 
   app.use(notFound);

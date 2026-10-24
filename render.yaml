@@ -22,6 +22,15 @@ services:
         sync: false
       - key: MONGO_URL # full Atlas connection string, ending in /cartora
         sync: false
+      # Needed for real emails (one-time codes). Without them the API refuses to send mail in production.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: EMAIL_USER # the Gmail address that sends the emails
+        sync: false
       # Render creates these random values for you:
       - key: JWT_SECRET
         generateValue: true

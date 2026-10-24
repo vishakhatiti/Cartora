@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema(
     },
 
     lastLoginAt: Date,
+
+    // Raised on password reset so every older login token stops working.
+    tokenVersion: { type: Number, default: 0, min: 0 },
+    // Unverified sign-ups delete themselves after this time (MongoDB TTL), which keeps the free
+    // Atlas tier from filling with abandoned registrations. Removed when the email is verified.
+    purgeAt: { type: Date, index: { expireAfterSeconds: 0 } },
   },
   { timestamps: true },
 );

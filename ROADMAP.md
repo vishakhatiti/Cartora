@@ -30,7 +30,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/catalog-service` | Read-only catalog API served from `server/data/data.json` in memory: search, filters, sort, pagination, suggestions, product detail, reviews, related. **Built, tests passing; awaiting merge.** | 2 |
 | `feature/pexels-images` | `fetch_pexels_images.py` and a manual workflow fetch category stock photos; the catalog serves them as `imageKind: stock`. **Code built and tested; photos not fetched until the key is added.** | 2 |
 | `feature/seed-database` | `npm run seed` for the generated data file | 0 |
-| `feature/auth-email-otp` | Register, email OTP, password login, login by code, forgot password | 1 |
+| `feature/auth-email-otp` | Register, email OTP, password login, login by code, forgot password. **Built; tested with an in-memory store and, in CI, real MongoDB. Real Gmail delivery not yet tried.** | 1 |
 | `feature/auth-google-guest` | Google sign-in and guest sessions | 1 |
 | `feature/products-search` | Product list, filters, search, suggestions, product page | 2 |
 | `feature/reviews` | Review list and add review, rating updates | 2 |
