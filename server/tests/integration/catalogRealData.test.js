@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getDefaultCatalog } from '../../src/services/catalog/catalog.js';
+import { loadCatalogFile, DATA_PATH } from '../../src/services/catalog/catalog.js';
 
 // Sanity checks against the real server/data/data.json that ships with the repo.
 describe('real dataset (server/data/data.json)', () => {
   let catalog;
   beforeAll(() => {
-    catalog = getDefaultCatalog();
+    catalog = loadCatalogFile(DATA_PATH); // pinned to the bundled file so adding catalogue.json.gz cannot change this test
   });
 
   it('loads all 12,500 products across 25 categories', () => {
