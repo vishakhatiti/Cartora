@@ -1,9 +1,9 @@
 // Checks WCAG contrast for every theme pair the UI relies on. Run: node scripts/check-contrast.mjs
 // Exits 1 if any pair is below its target (4.5 for text, 3 for large text and UI outlines).
 const themes = {
-  light:  { bg: '#eef3f2', surface: '#ffffff', fg: '#10211f', muted: '#4a625f', primary: '#0b6e69', primaryFg: '#ffffff', accent: '#f5a524', accentFg: '#2b1d00', line: '#c9d8d5', bad: '#b42318', ok: '#18794e' },
-  dark:   { bg: '#0b1514', surface: '#12201f', fg: '#e4efed', muted: '#9ab3af', primary: '#4fd1c5', primaryFg: '#04201d', accent: '#fbbf24', accentFg: '#2b1d00', line: '#2a4440', bad: '#ff8a80', ok: '#5fd39a' },
-  sunset: { bg: '#1b1030', surface: '#261742', fg: '#fbeee6', muted: '#c2aed3', primary: '#ff8a5b', primaryFg: '#2a0f06', accent: '#ffd166', accentFg: '#2b1d00', line: '#4a3478', bad: '#ff9a9a', ok: '#7ee0a8' },
+  light: { bg: '#f7f0e6', surface: '#fffaf3', fg: '#2b1d16', muted: '#6b5648', primary: '#a84a22', primaryFg: '#fffaf3', accent: '#e0a458', accentFg: '#2b1d00', line: '#e3d5c3', bad: '#b42318', ok: '#2f7a4d' },
+  dark:  { bg: '#1d1511', surface: '#281d17', fg: '#f3e8dc', muted: '#bfa994', primary: '#e07a4f', primaryFg: '#2a0f06', accent: '#e8b86a', accentFg: '#2b1d00', line: '#4a382d', bad: '#ff9a8a', ok: '#7ac596' },
+  sage:  { bg: '#eef1e6', surface: '#fbfcf6', fg: '#1f2a1d', muted: '#55634f', primary: '#3f6b3a', primaryFg: '#ffffff', accent: '#d9a441', accentFg: '#2b1d00', line: '#d3dbc4', bad: '#b42318', ok: '#2e7d4f' },
 };
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)

@@ -18,7 +18,7 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 | Search | Full-site search | Instant suggestions, filters saved in the URL so links can be shared |
 | Order updates | Order tracking and notifications | Order timeline, email confirmation and in-app notification bell |
 | Cart and wishlist | Cart and lists | Cart and wishlist kept in the browser for guests, saved to your account and merged at login |
-| Themes | One theme | Light, Dark and Sunset themes |
+| Themes | One theme | Cream, Espresso and Sage themes |
 | Product catalog | Hundreds of millions of items | 12,500 seeded products plus anything sellers add |
 | Logistics, returns, Prime | Yes | Out of scope |
 
@@ -129,7 +129,7 @@ Built so far: the page shell, three themes, toast messages, and the sign-in, reg
 
 | Part | Detail |
 |---|---|
-| Themes | Harbor (light), Night (dark) and Sunset (dark plum and coral), chosen with the three swatches in the header and remembered in the browser. All colours are tokens in `client/src/styles/index.css`; `node client/scripts/check-contrast.mjs` checks every text and background pair against WCAG AA. |
+| Themes | Cream (default: warm paper and terracotta), Espresso (warm dark) and Sage (soft green), chosen with the three swatches in the header and remembered in the browser. All colours are tokens in `client/src/styles/index.css`; `node client/scripts/check-contrast.mjs` checks every text and background pair against WCAG AA. |
 | Type | Bricolage Grotesque for headings and Figtree for text, both bundled with the app (no request to Google Fonts). |
 | Sign-in page | Password or emailed code, Google button, links to create an account, reset a password, or continue as guest. |
 | Guest | "Continue as guest" goes to the store. Nothing needs an account yet, and there is no server session for guests. |

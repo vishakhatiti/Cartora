@@ -1,7 +1,7 @@
 export const THEMES = [
-  { id: 'light', label: 'Harbor', swatch: ['#eef3f2', '#0b6e69'] },
-  { id: 'dark', label: 'Night', swatch: ['#0b1514', '#4fd1c5'] },
-  { id: 'sunset', label: 'Sunset', swatch: ['#1b1030', '#ff8a5b'] },
+  { id: 'light', label: 'Cream', swatch: ['#f7f0e6', '#a84a22'] },
+  { id: 'dark', label: 'Espresso', swatch: ['#1d1511', '#e07a4f'] },
+  { id: 'sage', label: 'Sage', swatch: ['#eef1e6', '#3f6b3a'] },
 ];
 
 const KEY = 'cartora-theme';
