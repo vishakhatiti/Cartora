@@ -4,14 +4,14 @@ import { formatCount } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
 import ProductImage from '../components/ProductImage.jsx';
 import Shelf from '../components/Shelf.jsx';
-import { SHELVES } from '../lib/shelves.js';
+import { SHELVES, pickFeatured } from '../lib/shelves.js';
 
 const TILT = ['-rotate-3', 'rotate-2', '-rotate-1'];
 
 export default function HomePage() {
   const cats = useRemote((signal) => catalogApi.categories(signal), []);
-  const top = useRemote((signal) => catalogApi.discover('best-sellers', { pageSize: 3 }, signal), []);
-  const shown = top.data?.items ?? [];
+  const top = useRemote((signal) => catalogApi.discover('best-sellers', { pageSize: 48 }, signal), []);
+  const shown = pickFeatured(top.data?.items ?? []);
 
   return (
     <div className="settle">
