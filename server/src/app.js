@@ -11,6 +11,7 @@ import { loadUser } from './middleware/auth.js';
 import { createAuthService } from './services/auth/authService.js';
 import { createMongoStore } from './services/auth/mongoStore.js';
 import { createPasswordHasher } from './services/auth/passwords.js';
+import { createGoogleVerifier } from './services/auth/googleVerifier.js';
 import { createMailer } from './services/mail/mailer.js';
 import { notFound, createErrorHandler } from './middleware/errorHandler.js';
 
@@ -43,6 +44,7 @@ export function createApp(env, { catalog, authService } = {}) {
     mailer: createMailer(env),
     hasher: createPasswordHasher(),
     secret: env.JWT_SECRET,
+    googleVerifier: createGoogleVerifier(env.GOOGLE_CLIENT_ID),
   });
   app.use(loadUser({ authService: auth, secret: env.JWT_SECRET }));
 

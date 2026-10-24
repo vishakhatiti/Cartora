@@ -17,14 +17,17 @@ export function createMemoryStore() {
     async findUserById(id) {
       return copy(users.get(id));
     },
-    async createUser({ email, name, passwordHash = null, emailVerified = false, purgeAt = null }) {
+    async findUserByGoogleId(googleId) {
+      return copy([...users.values()].find((u) => u.googleId === googleId));
+    },
+    async createUser({ email, name, passwordHash = null, emailVerified = false, purgeAt = null, googleId = null, avatarUrl = null }) {
       if ([...users.values()].some((u) => u.email === email)) {
         const err = new Error('duplicate');
         err.code = 'DUPLICATE';
         throw err;
       }
       const user = {
-        id: randomUUID(), email, name, passwordHash, emailVerified, purgeAt,
+        id: randomUUID(), email, name, passwordHash, emailVerified, purgeAt, googleId, avatarUrl,
         isSeller: false, storeName: null, tokenVersion: 0, lastLoginAt: null,
       };
       users.set(user.id, user);

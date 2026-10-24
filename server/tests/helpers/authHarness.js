@@ -7,11 +7,11 @@ export const SECRET = 'test-secret-that-is-at-least-32-characters-long';
 export const fastHasher = createPasswordHasher({ N: 2 ** 10, r: 8, p: 1 });
 
 /** Auth service on an in-memory store, a mailer that records messages, and a clock tests can move. */
-export function createHarness({ store = createMemoryStore(), startAt = new Date('2026-01-01T00:00:00Z') } = {}) {
+export function createHarness({ store = createMemoryStore(), startAt = new Date('2026-01-01T00:00:00Z'), googleVerifier = null } = {}) {
   let time = startAt.getTime();
   const outbox = [];
   const mailer = { send: async (message) => { outbox.push(message); } };
-  const service = createAuthService({ store, mailer, hasher: fastHasher, secret: SECRET, now: () => new Date(time) });
+  const service = createAuthService({ store, mailer, hasher: fastHasher, secret: SECRET, googleVerifier, now: () => new Date(time) });
   return {
     store, service, outbox,
     advance: (seconds) => { time += seconds * 1000; },

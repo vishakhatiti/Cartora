@@ -163,3 +163,33 @@ describe('brute-force limits', () => {
     expect(last.body.error.code).toBe('RATE_LIMITED');
   });
 });
+
+describe('Google sign-in over HTTP', () => {
+  const googleProfile = { sub: 'g-1', email: 'g@example.com', emailVerified: true, name: 'Gita', picture: null };
+
+  it('signs in with a valid credential and sets the session cookie', async () => {
+    const h = createHarness({ googleVerifier: { verify: async () => googleProfile } });
+    const app = createApp(env, { authService: h.service });
+    const res = await request(app).post('/api/auth/google').send({ credential: 'x'.repeat(40) });
+    expect(res.status).toBe(200);
+    expect(res.body.user).toMatchObject({ email: 'g@example.com', emailVerified: true });
+    expect(res.headers['set-cookie'][0]).toMatch(/HttpOnly/);
+  });
+
+  it('rejects a missing or oversized credential with 400', async () => {
+    const h = createHarness({ googleVerifier: { verify: async () => googleProfile } });
+    const app = createApp(env, { authService: h.service });
+    expect((await request(app).post('/api/auth/google').send({})).status).toBe(400);
+    expect((await request(app).post('/api/auth/google').send({ credential: 'x'.repeat(5001) })).status).toBe(400);
+    expect((await request(app).post('/api/auth/google').send({ credential: { $ne: 1 } })).status).toBe(400);
+  });
+
+  it('returns 401 and no cookie when Google rejects the token', async () => {
+    const { AppError } = await import('../../src/utils/AppError.js');
+    const h = createHarness({ googleVerifier: { verify: async () => { throw new AppError(401, 'Google sign-in failed. Please try again.', 'GOOGLE_INVALID'); } } });
+    const app = createApp(env, { authService: h.service });
+    const res = await request(app).post('/api/auth/google').send({ credential: 'x'.repeat(40) });
+    expect(res.status).toBe(401);
+    expect(res.headers['set-cookie']).toBeUndefined();
+  });
+});
