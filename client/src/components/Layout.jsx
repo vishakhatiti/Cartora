@@ -68,7 +68,7 @@ function SecondRow() {
           </>
         ) : (
           <nav aria-label="Categories" className="min-w-0 flex-1">
-            <ul className="flex gap-1 overflow-x-auto">
+            <ul className="flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {SHELVES.map((sh) => <li key={sh.slug}><NavLink to={`/${sh.slug}`} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>{sh.short}</NavLink></li>)}
               <li><NavLink to="/products" end className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>All products</NavLink></li>
               {items.slice(0, 10).map((c) => (
