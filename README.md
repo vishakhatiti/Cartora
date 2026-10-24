@@ -69,32 +69,20 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 
 ## Real product data (Amazon Reviews 2023)
 
-`server/scripts/build_catalog.py` turns downloaded Amazon Reviews 2023 files into `server/data/catalogue.json.gz`: about 13,000 products across up to 24 categories, each with a real Amazon-hosted image, price, rating, features and up to 5 reviews. The server uses that file when it exists and otherwise falls back to `data.json`. Nothing here has been run on the real Amazon files yet; it is tested on small generated samples only.
+The catalog is `server/data/catalogue.json.gz`: 12,000 products in 24 categories (500 each), every product with 1 or more Amazon-hosted photos (about 5.6 on average), a price, a rating, features, specifications and 36,267 reviews in total. The server loads it when it exists and otherwise falls back to `data.json`. The source is stated in the file as "McAuley-Lab Reviews 2023"; we have not compared it against the original dataset.
 
-| Step | What to do |
-|---|---|
-| 1 | Get the files from the [dataset page](https://amazon-reviews-2023.github.io/) or the Hugging Face repo `McAuley-Lab/Amazon-Reviews-2023` (paths `raw/meta_categories/<Category>.jsonl` and `raw/review_categories/<Category>.jsonl`). Put them in one folder. |
-| 2 | Name them `meta_<Category>.jsonl` (or `.jsonl.gz`) and `<Category>.jsonl`. The folders `meta_categories/` and `review_categories/` also work. |
-| 3 | Run `python server/scripts/build_catalog.py --input-dir <folder> --target 13000` (Python 3.9+, no packages needed). |
-| 4 | Commit `server/data/catalogue.json.gz` on a feature branch and open a pull request. |
-
-Some category files are very large. A cut-off download still works: the script stops cleanly at the end of what it can read, and `--max-meta-lines` and `--max-review-lines` limit how much it reads. The sample then comes from the start of each file, not the whole file. Products need a price, an Amazon image, at least 5 ratings and at least 2 collected reviews. The dataset has no deal or stock data, so Cartora does not show any for these products.
-
-Tests: `cd server/scripts && python3 -m unittest discover -s tests`.
-
-**Licence:** the dataset page we checked states no licence. Check the terms on the project site before publishing the derived file in a public repository.
-
-## Product images
-
-| Source | When it applies | How the website labels it |
+| Field | What the file really contains | How Cartora treats it |
 |---|---|---|
-| Amazon-hosted photo of the product | Products from `catalogue.json.gz` (`imageKind: "real"`) | Shown as the product photo |
-| Pexels stock photo for the category | Products with no photo of their own, once `server/data/category-images.json` exists (`imageKind: "stock"`) | Must be labelled "Illustrative image", with a "Photos provided by Pexels" link and the photographer credit |
-| Generated artwork | No photo available (`imageKind: "none"`), or any image that fails to load | Drawn by the website |
+| Photos, titles, prices, ratings, specifications, reviews | Real dataset values | Shown |
+| Reviewer names | Not in the file | Reviews show as "Customer" |
+| `stock`, `isBestSeller`, `importedRank` | Generated when the file was built (stock is spread evenly from 3 to 60, exactly 20 best sellers per category) | Not used or shown |
+| `listPriceCents` | Every list price is 1-29% above the price, which looks generated | Not shown, so no discount is claimed |
 
-Pexels photos show the category (for example a kitchen scene), not the exact product. Each product always gets the same photo, chosen from its id.
+About 11% of products have no reviews. Photos are loaded from Amazon's servers, so a photo can disappear later; the website draws generated artwork when an image fails to load.
 
-To fetch them: add your Pexels key as a GitHub secret named `PEXELS_API_KEY` (Settings > Secrets and variables > Actions), then run the **Fetch Pexels category images** workflow from the Actions tab. It uses about 84 requests, under Pexels' default limit of 200 per hour, and pushes `server/data/category-images.json` to the branch `bot/pexels-images`. Pexels' guidelines require a prominent link to Pexels and photographer credit where possible. We did not find a stated rule on hotlinking, so the site links to Pexels-hosted images as the API returns them.
+`server/scripts/build_catalog.py` can rebuild a catalogue from downloaded Amazon Reviews 2023 files, but it writes the older array layout and is not needed to use the committed file. Tests: `cd server/scripts && python3 -m unittest discover -s tests`.
+
+**Licence:** the dataset page we checked states no licence. Check the project's terms before relying on it for anything beyond this project.
 
 ## Environment variables
 

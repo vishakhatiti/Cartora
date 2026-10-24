@@ -21,7 +21,7 @@ describe('loadCatalogFile', () => {
   });
 
   it('rejects a file that is not an array', () => {
-    writeFileSync(join(dir, 'bad.json'), '{"products": []}');
+    writeFileSync(join(dir, 'bad.json'), '{"items": []}');
     expect(() => loadCatalogFile(join(dir, 'bad.json'))).toThrow(/array/);
   });
 });

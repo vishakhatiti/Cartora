@@ -46,6 +46,8 @@ function normalizeReview(raw, index) {
     title: String(raw.title ?? '').trim(),
     text: String(raw.text ?? '').trim(),
     createdAt: Number.isFinite(seconds) ? new Date(seconds * 1000).toISOString() : null,
+    verifiedPurchase: raw.verified_purchase === true,
+    helpfulCount: Number.isInteger(raw.helpful_vote) && raw.helpful_vote > 0 ? raw.helpful_vote : 0,
   };
 }
 
@@ -56,10 +58,10 @@ function normalizeReview(raw, index) {
 export function normalizeProduct(raw) {
   const id = String(raw?.parent_asin ?? '').trim();
   const title = String(raw?.title ?? '').trim();
-  const priceCents = toSafePrice(raw?.price);
+  const priceCents = Number.isInteger(raw?.price_cents) ? raw.price_cents : toSafePrice(raw?.price);
   if (!id || !title || priceCents === null || priceCents === 0) return null;
 
-  const category = toCategory(raw.main_category);
+  const category = raw.category?.slug ? raw.category : toCategory(raw.main_category);
 
   let deal = null;
   if (raw.deal?.has_deal) {
@@ -90,6 +92,9 @@ export function normalizeProduct(raw) {
     ratingAvg: Number.isFinite(Number(raw.average_rating)) ? Number(raw.average_rating) : 0,
     ratingCount: Number.isFinite(Number(raw.rating_number)) ? Number(raw.rating_number) : 0,
     features: (Array.isArray(raw.features) ? raw.features : []).map(String),
+    description: typeof raw.description === 'string' ? raw.description.trim().slice(0, 4000) : '',
+    details: toDetails(raw.details),
+    categoryPath: (Array.isArray(raw.category_path) ? raw.category_path : []).map(String),
     images,
     // When true the UI draws generated artwork instead of a photo.
     hasRealImage: images.length > 0,
@@ -97,9 +102,19 @@ export function normalizeProduct(raw) {
   };
 }
 
+/** Specifications as a plain string-to-string object; anything else is dropped. */
+function toDetails(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([k, v]) => typeof v === 'string' && v.trim() && k.length <= 80)
+      .map(([k, v]) => [k, v.trim().slice(0, 300)]),
+  );
+}
+
 /** Listing shape: no embedded reviews, features, or internal search-index fields. */
 export function toSummary(product) {
   // eslint-disable-next-line no-unused-vars
-  const { reviews, features, titleLower, titleWords, haystack, ...summary } = product;
+  const { reviews, features, description, details, categoryPath, titleLower, titleWords, haystack, ...summary } = product;
   return { ...summary, reviewCount: reviews.length };
 }

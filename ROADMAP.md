@@ -25,7 +25,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 
 | Branch | Feature | Phase |
 |---|---|---|
-| `feature/amazon-data-pipeline` | `build_catalog.py` samples downloaded Amazon Reviews 2023 files into `catalogue.json.gz`; the server loads it when present. **Script and loader built; the real file is not generated yet.** | 0 |
+| `feature/amazon-data-pipeline` | `build_catalog.py` samples downloaded Amazon Reviews 2023 files into `catalogue.json.gz`; the server loads it when present. **Done: the committed `catalogue.json.gz` (12,000 products, real photos) is loaded by the server.** | 0 |
 | `feature/server-foundation` | Express app, Mongo connection, env validation, health check, models | 0 |
 | `feature/catalog-service` | Read-only catalog API served from `server/data/data.json` in memory: search, filters, sort, pagination, suggestions, product detail, reviews, related. **Built, tests passing; awaiting merge.** | 2 |
 | `feature/pexels-images` | `fetch_pexels_images.py` and a manual workflow fetch category stock photos; the catalog serves them as `imageKind: stock`. **Code built and tested; photos not fetched until the key is added.** | 2 |

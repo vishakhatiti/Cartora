@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { normalizeProduct, toSummary } from './normalize.js';
+import { adaptCatalogueV2, isCatalogueV2 } from './formats.js';
 
 export const DEFAULT_PAGE_SIZE = 24;
 export const MAX_PAGE_SIZE = 48;
@@ -223,8 +224,10 @@ export function loadCatalogFile(path, { stockImages = null } = {}) {
   const bytes = readFileSync(path);
   const text = path.endsWith('.gz') ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8');
   const parsed = JSON.parse(text);
-  if (!Array.isArray(parsed)) throw new Error(`${path} must contain an array of products`);
-  return createCatalog(parsed, { stockImages });
+  // Two layouts are accepted: a plain array of dataset records, or the catalogue.json.gz object.
+  const records = isCatalogueV2(parsed) ? adaptCatalogueV2(parsed) : parsed;
+  if (!Array.isArray(records)) throw new Error(`${path} must contain an array of products`);
+  return createCatalog(records, { stockImages });
 }
 
 /**
