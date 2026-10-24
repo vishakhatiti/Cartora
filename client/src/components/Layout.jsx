@@ -5,6 +5,7 @@ import { useRemote } from '../hooks/useRemote.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { SHELVES } from '../lib/shelves.js';
+import NotificationBell from './NotificationBell.jsx';
 import ModeSwitch from './ModeSwitch.jsx';
 import Footer from './Footer.jsx';
 import NavDrawer from './NavDrawer.jsx';
@@ -32,6 +33,11 @@ function CartLink() {
       {itemCount > 0 && <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-orange px-1 text-xs font-bold text-orange-fg">{itemCount > 99 ? '99+' : itemCount}</span>}
     </Link>
   );
+}
+
+function BellWhenSignedIn() {
+  const { user } = useAuth();
+  return user ? <NotificationBell /> : null;
 }
 
 function Logo() {
@@ -97,6 +103,7 @@ export default function Layout() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <ThemeSwitcher />
+            <BellWhenSignedIn />
             <CartLink />
             <AccountArea />
           </div>

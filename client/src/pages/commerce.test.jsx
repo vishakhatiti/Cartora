@@ -407,3 +407,61 @@ describe('customer service', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Too many requests.');
   });
 });
+
+describe('notification bell', () => {
+  it('is hidden for guests', async () => {
+    renderApp({ route: '/help' });
+    await screen.findByRole('heading', { level: 1, name: 'Customer service' });
+    expect(screen.queryByRole('button', { name: /^Notifications/ })).not.toBeInTheDocument();
+  });
+
+  it('shows the unread count, lists items and marks them read', async () => {
+    const commerce = fakeCommerce();
+    commerce.state.pushNotification({ type: 'order_paid', title: 'Order confirmed', message: 'Order CRT-ABCD2345 is confirmed.', link: '/orders/o1' });
+    renderApp({ route: '/help', api: signedIn(), commerce });
+    const bell = await screen.findByRole('button', { name: 'Notifications, 1 unread' });
+    await userEvent.click(bell);
+    const dialog = screen.getByRole('dialog', { name: 'Notifications' });
+    expect(within(dialog).getByRole('link', { name: /Order confirmed/ })).toHaveAttribute('href', '/orders/o1');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark all read' }));
+    expect(await screen.findByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(commerce.markNotificationsRead).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an empty state and closes with Escape', async () => {
+    renderApp({ route: '/help', api: signedIn() });
+    await userEvent.click(await screen.findByRole('button', { name: 'Notifications' }));
+    expect(screen.getByText('Nothing new yet.')).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Notifications' })).not.toBeInTheDocument();
+  });
+});
+
+describe('seller items on shopper pages', () => {
+  const sellerProduct = (over = {}) => detail({ storeName: 'Asha Crafts', stockQty: 3, ...over });
+  const stubSeller = (product) => stubCatalogFetch({
+    '/api/products/B0TEST0001/reviews': () => reviewsPage, '/api/products/B0TEST0001/related': () => ({ items: [] }), '/api/products/B0TEST0001': () => ({ product: product }),
+  });
+
+  it('names the store and warns when stock is low', async () => {
+    stubSeller(sellerProduct());
+    renderApp({ route: '/product/B0TEST0001' });
+    expect(await screen.findByText('Asha Crafts')).toBeInTheDocument();
+    expect(screen.getByText('Only 3 left')).toBeInTheDocument();
+  });
+
+  it('disables buying when sold out', async () => {
+    stubSeller(sellerProduct({ stockQty: 0 }));
+    renderApp({ route: '/product/B0TEST0001' });
+    expect(await screen.findByRole('button', { name: 'Out of stock' })).toBeDisabled();
+    expect(screen.queryByRole('group', { name: 'Quantity to add' })).not.toBeInTheDocument();
+  });
+
+  it('shows per-item shipping progress on an order', async () => {
+    const commerce = fakeCommerce();
+    commerce.state.orders.set('o9', { id: 'o9', orderNumber: 'CRT-SHIPPED1', status: 'shipped', items: [{ productId: 'S1', title: 'Hand-made Mug', qty: 1, unitPriceCents: 2450, storeName: 'Asha Crafts', fulfilment: 'shipped', shippedAt: '2026-10-22T00:00:00.000Z' }], subtotalCents: 2450, shippingCents: 599, totalCents: 3049, payment: { demo: true }, shippingAddress: address, createdAt: '2026-10-20T00:00:00.000Z' });
+    renderApp({ route: '/orders/o9', api: signedIn(), commerce });
+    const progress = await screen.findByRole('list', { name: 'Shipping progress' });
+    expect(progress).toHaveTextContent('Hand-made Mug from Asha Crafts: shipped on');
+  });
+});

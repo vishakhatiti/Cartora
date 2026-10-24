@@ -30,11 +30,12 @@ export function fakeCommerce(overrides = {}) {
   let wishIds = [];
   const wishOf = () => ({ wishlist: { ids: [...wishIds], count: wishIds.length, items: wishIds.map((id) => ({ id, title: PRICES[id]?.title ?? id, brand: PRICES[id]?.brand ?? '', category: { slug: 'electronics', label: 'Electronics' }, priceCents: PRICES[id]?.priceCents ?? 100, finalPriceCents: PRICES[id]?.priceCents ?? 100, deal: null, images: [], ratingAvg: 4, ratingCount: 1 })) } });
   let book = [];
+  let notes = [];
   const tickets = [];
   const bookOf = () => ({ addresses: book.map((a) => ({ ...a })) });
   const cartOf = () => ({ cart: price(serverItems) });
   const api = {
-    state: { get items() { return serverItems; }, get wishlist() { return wishIds; }, get addresses() { return book; }, sessions, orders },
+    state: { get items() { return serverItems; }, get wishlist() { return wishIds; }, get addresses() { return book; }, pushNotification(n) { notes = [{ id: `n${notes.length + 1}`, read: false, createdAt: '2026-10-24T10:00:00.000Z', link: null, ...n }, ...notes]; }, sessions, orders },
     quote: vi.fn((items) => Promise.resolve({ cart: price(items) })),
     getCart: vi.fn(() => Promise.resolve(cartOf())),
     setQuantity: vi.fn((productId, qty) => {
@@ -73,6 +74,8 @@ export function fakeCommerce(overrides = {}) {
       return Promise.resolve({ ticket });
     }),
     listTickets: vi.fn(() => Promise.resolve({ tickets: [...tickets] })),
+    notifications: vi.fn(() => Promise.resolve({ items: notes.map((n) => ({ ...n })), unread: notes.filter((n) => !n.read).length })),
+    markNotificationsRead: vi.fn(() => { notes = notes.map((n) => ({ ...n, read: true })); return Promise.resolve({ items: notes.map((n) => ({ ...n })), unread: 0 }); }),
     checkoutConfig: vi.fn(() => Promise.resolve({ provider: 'demo', demo: true, label: 'Demo Mode — No Real Money Charged' })),
     startCheckout: vi.fn((address) => {
       const cart = price(serverItems);
