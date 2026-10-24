@@ -4,6 +4,7 @@ import { CheckoutSession } from '../../models/CheckoutSession.js';
 import { Order } from '../../models/Order.js';
 import { Wishlist } from '../../models/Wishlist.js';
 import { AddressBook } from '../../models/AddressBook.js';
+import { SupportTicket } from '../../models/SupportTicket.js';
 
 const isValidId = (id) => mongoose.isValidObjectId(id) && String(new mongoose.Types.ObjectId(String(id))) === String(id);
 
@@ -23,6 +24,12 @@ const toOrder = (doc) =>
     payment: { provider: doc.payment?.provider, demo: Boolean(doc.payment?.demo), sessionId: doc.payment?.sessionId },
     shippingAddress: doc.shippingAddress ?? null, paidAt: doc.paidAt ?? null,
     timeline: (doc.timeline ?? []).map((t) => ({ status: t.status, at: t.at })), createdAt: doc.createdAt,
+  };
+
+const toTicket = (doc) =>
+  doc && {
+    id: String(doc._id), ticketNumber: doc.ticketNumber, userId: doc.userId ? String(doc.userId) : null, name: doc.name, email: doc.email,
+    topic: doc.topic, orderNumber: doc.orderNumber ?? null, message: doc.message, status: doc.status, createdAt: doc.createdAt,
   };
 
 /** MongoDB-backed commerce store. Stores ids and quantities for carts, and snapshots for sessions and orders. */
@@ -65,6 +72,14 @@ export function createMongoCommerceStore() {
       if (addresses.length === 0) await AddressBook.deleteOne({ userId });
       else await AddressBook.findOneAndUpdate({ userId }, { $set: { addresses } }, { upsert: true, runValidators: true });
       return addresses;
+    },
+
+    async createTicket(data) {
+      return toTicket(await SupportTicket.create(data));
+    },
+    async listTicketsForUser(userId) {
+      if (!isValidId(userId)) return [];
+      return (await SupportTicket.find({ userId }).sort({ createdAt: -1 }).limit(50).lean()).map(toTicket);
     },
 
     async createSession(data) {

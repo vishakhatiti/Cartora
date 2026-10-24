@@ -47,6 +47,7 @@ export default function NavDrawer({ open, onClose }) {
           <Link to="/new-releases" onClick={onClose} className={item}>New releases</Link>
           <Link to="/wishlist" onClick={onClose} className={item}>Wishlist</Link>
           <Link to="/orders" onClick={onClose} className={item}>Your orders</Link>
+          <Link to="/help" onClick={onClose} className={item}>Customer service</Link>
           <Link to="/cart" onClick={onClose} className={item}>Cart</Link>
         </section>
 

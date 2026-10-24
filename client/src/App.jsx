@@ -7,6 +7,7 @@ import ShelfPage from './pages/ShelfPage.jsx';
 import WishlistPage from './pages/WishlistPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 import AddressesPage from './pages/AddressesPage.jsx';
+import HelpPage from './pages/HelpPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import DemoPaymentPage from './pages/DemoPaymentPage.jsx';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="best-sellers" element={<ShelfPage slug="best-sellers" />} />
         <Route path="new-releases" element={<ShelfPage slug="new-releases" />} />
         <Route path="wishlist" element={<WishlistPage />} />
+        <Route path="help" element={<HelpPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/pay/:id" element={<DemoPaymentPage />} />

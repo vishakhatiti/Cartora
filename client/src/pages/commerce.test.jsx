@@ -375,3 +375,35 @@ describe('addresses', () => {
     }
   });
 });
+
+describe('customer service', () => {
+  it('shows honest answers, including that payments are simulated', async () => {
+    renderApp({ route: '/help' });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Customer service' })).toBeInTheDocument();
+    expect(screen.getByText(/Demo Mode — No Real Money Charged/)).toBeInTheDocument();
+    expect(screen.getByText(/Shipping is free when your subtotal is \$50\.00 or more/)).toBeInTheDocument();
+  });
+
+  it('validates, then sends a request and shows the reference number', async () => {
+    const commerce = fakeCommerce();
+    renderApp({ route: '/help', commerce });
+    await userEvent.click(await screen.findByRole('button', { name: 'Send request' }));
+    expect(await screen.findByText('Enter your name.')).toBeInTheDocument();
+    expect(commerce.createTicket).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByLabelText('Your name'), 'Asha');
+    await userEvent.type(screen.getByLabelText('Email'), 'asha@example.com');
+    await userEvent.type(screen.getByLabelText('How can we help?'), 'My parcel has not arrived yet.');
+    await userEvent.click(screen.getByRole('button', { name: 'Send request' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('SUP-TESTTICK');
+    expect(commerce.createTicket).toHaveBeenCalledWith(expect.objectContaining({ topic: 'order', email: 'asha@example.com' }));
+  });
+
+  it('shows the server message when sending fails', async () => {
+    const commerce = fakeCommerce({ createTicket: vi.fn().mockRejectedValue(new ApiError(429, 'RATE_LIMITED', 'Too many requests. Please try again later.')) });
+    renderApp({ route: '/help', api: signedIn(), commerce });
+    await screen.findByRole('button', { name: /account menu/i });
+    await userEvent.type(await screen.findByLabelText('How can we help?'), 'Please help me with this.');
+    await userEvent.click(screen.getByRole('button', { name: 'Send request' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Too many requests.');
+  });
+});

@@ -8,3 +8,4 @@ export { Otp, OTP_PURPOSES, OTP_TTL_MINUTES, OTP_MAX_ATTEMPTS } from './Otp.js';
 export { Notification } from './Notification.js';
 export { CheckoutSession, CHECKOUT_STATUSES } from './CheckoutSession.js';
 export { AddressBook } from './AddressBook.js';
+export { SupportTicket, TICKET_TOPICS } from './SupportTicket.js';

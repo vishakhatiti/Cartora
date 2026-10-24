@@ -30,6 +30,7 @@ export function fakeCommerce(overrides = {}) {
   let wishIds = [];
   const wishOf = () => ({ wishlist: { ids: [...wishIds], count: wishIds.length, items: wishIds.map((id) => ({ id, title: PRICES[id]?.title ?? id, brand: PRICES[id]?.brand ?? '', category: { slug: 'electronics', label: 'Electronics' }, priceCents: PRICES[id]?.priceCents ?? 100, finalPriceCents: PRICES[id]?.priceCents ?? 100, deal: null, images: [], ratingAvg: 4, ratingCount: 1 })) } });
   let book = [];
+  const tickets = [];
   const bookOf = () => ({ addresses: book.map((a) => ({ ...a })) });
   const cartOf = () => ({ cart: price(serverItems) });
   const api = {
@@ -66,6 +67,12 @@ export function fakeCommerce(overrides = {}) {
       if (wasDefault && book[0]) book[0] = { ...book[0], isDefault: true };
       return Promise.resolve(bookOf());
     }),
+    createTicket: vi.fn((data) => {
+      const ticket = { id: `t${tickets.length + 1}`, ticketNumber: 'SUP-TESTTICK', topic: data.topic, orderNumber: data.orderNumber ?? null, message: data.message, status: 'open', createdAt: '2026-10-24T10:00:00.000Z' };
+      tickets.unshift(ticket);
+      return Promise.resolve({ ticket });
+    }),
+    listTickets: vi.fn(() => Promise.resolve({ tickets: [...tickets] })),
     checkoutConfig: vi.fn(() => Promise.resolve({ provider: 'demo', demo: true, label: 'Demo Mode — No Real Money Charged' })),
     startCheckout: vi.fn((address) => {
       const cart = price(serverItems);

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { createMemoryCommerceStore } from '../../src/services/commerce/memoryStore.js';
 import { createMongoCommerceStore } from '../../src/services/commerce/mongoStore.js';
-import { Cart, CheckoutSession, Order, Wishlist, AddressBook } from '../../src/models/index.js';
+import { Cart, CheckoutSession, Order, Wishlist, AddressBook, SupportTicket } from '../../src/models/index.js';
 
 // Same behaviour tests for the in-memory store (always) and real MongoDB (when MONGO_TEST_URL is set, as in CI).
 const MONGO_TEST_URL = process.env.MONGO_TEST_URL;
@@ -10,7 +10,7 @@ const targets = [
   { name: 'memory store', make: async () => createMemoryCommerceStore(), newUserId: () => `user-${Math.random()}` },
   ...(MONGO_TEST_URL ? [{
     name: 'MongoDB store',
-    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({}), Wishlist.deleteMany({}), AddressBook.deleteMany({})]); return createMongoCommerceStore(); },
+    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({}), Wishlist.deleteMany({}), AddressBook.deleteMany({}), SupportTicket.deleteMany({})]); return createMongoCommerceStore(); },
     newUserId: () => String(new mongoose.Types.ObjectId()),
   }] : []),
 ];
@@ -18,7 +18,7 @@ const targets = [
 beforeAll(async () => {
   if (MONGO_TEST_URL) {
     await mongoose.connect(MONGO_TEST_URL, { serverSelectionTimeoutMS: 15000 });
-    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init(), Wishlist.init(), AddressBook.init()]);
+    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init(), Wishlist.init(), AddressBook.init(), SupportTicket.init()]);
   }
 });
 afterAll(async () => { if (MONGO_TEST_URL) await mongoose.disconnect(); });
@@ -38,6 +38,17 @@ const orderData = (session, number = 'CRT-AAAAAAAA') => ({
 describe.each(targets)('commerce store contract: $name', ({ make, newUserId }) => {
   let store; let userId;
   beforeEach(async () => { store = await make(); userId = newUserId(); });
+
+  it('stores support tickets and lists a user\'s own, newest first', async () => {
+    const base = { name: 'Asha', email: 'asha@example.com', topic: 'order', orderNumber: null, message: 'Where is my parcel please?' };
+    const one = await store.createTicket({ ...base, userId, ticketNumber: 'SUP-AAAAAAAA' });
+    expect(one).toMatchObject({ ticketNumber: 'SUP-AAAAAAAA', status: 'open', userId });
+    await store.createTicket({ ...base, userId, ticketNumber: 'SUP-BBBBBBBB' });
+    await store.createTicket({ ...base, userId: null, ticketNumber: 'SUP-CCCCCCCC' });
+    const mine = await store.listTicketsForUser(userId);
+    expect(mine.map((t) => t.ticketNumber)).toEqual(['SUP-BBBBBBBB', 'SUP-AAAAAAAA']);
+    expect(await store.listTicketsForUser(newUserId())).toEqual([]);
+  });
 
   it('stores an address book per user and keeps optional fields optional', async () => {
     const a = { id: 'a1', name: 'Asha', line1: '1 Main St', city: 'Pune', state: 'MH', postalCode: '411001', country: 'IN', isDefault: true };

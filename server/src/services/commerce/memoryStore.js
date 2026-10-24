@@ -8,6 +8,7 @@ export function createMemoryCommerceStore() {
   const carts = new Map(); // userId -> [{ productId, qty }]
   const wishlists = new Map(); // userId -> [productId]
   const addressBooks = new Map(); // userId -> [address]
+  const tickets = [];
   const sessions = new Map();
   const orders = new Map();
   const orderIdBySession = new Map();
@@ -36,6 +37,15 @@ export function createMemoryCommerceStore() {
     async setAddresses(userId, addresses) {
       if (addresses.length === 0) addressBooks.delete(userId); else addressBooks.set(userId, clone(addresses));
       return clone(addresses);
+    },
+
+    async createTicket(data) {
+      const ticket = { ...clone(data), id: randomUUID(), status: 'open', createdAt: new Date() };
+      tickets.push(ticket);
+      return clone(ticket);
+    },
+    async listTicketsForUser(userId) {
+      return clone(tickets.filter((t) => t.userId === userId).sort((a, b) => b.createdAt - a.createdAt));
     },
 
     async createSession(data) {

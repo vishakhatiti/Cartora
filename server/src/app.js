@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
+import { createSupportRouter } from './routes/support.js';
 import { createAddressRouter } from './routes/addresses.js';
 import { createWishlistRouter } from './routes/wishlist.js';
 import { createCartRouter } from './routes/cart.js';
@@ -62,6 +63,7 @@ export function createApp(env, { catalog, authService, commerce: commerceOverrid
   const getCatalog = () => catalog ?? getDefaultCatalog();
   const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env) });
   app.use('/api/cart', createCartRouter({ carts: commerce.carts }));
+  app.use('/api/support', createSupportRouter({ support: commerce.support }));
   app.use('/api/addresses', createAddressRouter({ addresses: commerce.addresses }));
   app.use('/api/wishlist', createWishlistRouter({ wishlist: commerce.wishlist }));
   app.use('/api/checkout', createCheckoutRouter({ checkout: commerce.checkout }));
