@@ -28,7 +28,7 @@ describe('products page', () => {
     expect(within(card).getByRole('img', { name: /4\.5 out of 5 stars, 1,200 ratings/ })).toBeInTheDocument();
     const book = screen.getByRole('link', { name: /Paperback Novel/ });
     expect(within(book).getByRole('img', { name: /no photo available/ })).toBeInTheDocument();
-    expect(screen.getByText('2 products')).toBeInTheDocument();
+    expect(screen.getByText(/2 products from the Cartora catalogue/)).toBeInTheDocument();
   });
 
   it('switches to artwork when a photo fails to load', async () => {
@@ -56,7 +56,10 @@ describe('products page', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: '3 stars and up' })[0]);
     await waitFor(() => expect(calledWith(spy, 'minRating=3')).toBe(true));
-    expect(screen.getAllByRole('button', { name: /Clear all filters/ })[0]).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove filter Electronics' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove filter 3 stars & up' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    expect(screen.queryByRole('button', { name: /Remove filter/ })).not.toBeInTheDocument();
   });
 
   it('applies a price range', async () => {

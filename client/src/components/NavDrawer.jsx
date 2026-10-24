@@ -28,6 +28,16 @@ export default function NavDrawer({ open, onClose }) {
   return (
     <Drawer open={open} onClose={onClose} title={user ? `Hello, ${user.name.trim().split(/\s+/)[0]}` : 'Hello, guest'}>
       <nav aria-label="Menu" className="flex-1 space-y-5 p-3">
+        <section aria-labelledby="dw-mode">
+          <h2 id="dw-mode" className="px-3 pb-1 font-sans text-xs font-bold uppercase tracking-wide text-muted">Mode</h2>
+          <div className="px-3">
+            <div className="inline-flex gap-1 rounded-full bg-hero p-1">
+              <Link to="/" onClick={onClose} className="rounded-full px-4 py-1.5 text-sm font-semibold text-hero-fg hover:bg-hero-fg/10">Buying</Link>
+              <Link to="/sell" onClick={onClose} className="rounded-full px-4 py-1.5 text-sm font-semibold text-hero-fg hover:bg-hero-fg/10">Selling</Link>
+            </div>
+          </div>
+        </section>
+
         <section aria-labelledby="dw-browse">
           <h2 id="dw-browse" className="px-3 pb-1 font-sans text-xs font-bold uppercase tracking-wide text-muted">Browse</h2>
           <Link to="/" onClick={onClose} className={item}>Home</Link>

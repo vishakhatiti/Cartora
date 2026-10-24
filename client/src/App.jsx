@@ -3,6 +3,8 @@ import Layout from './components/Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductsPage from './pages/ProductsPage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
+import SellerDashboardPage from './pages/SellerDashboardPage.jsx';
+import SellerStartPage from './pages/SellerStartPage.jsx';
 import SignInPage from './pages/SignInPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import ForgotPage from './pages/ForgotPage.jsx';
@@ -16,6 +18,8 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="product/:id" element={<ProductPage />} />
+        <Route path="sell" element={<SellerDashboardPage />} />
+        <Route path="sell/start" element={<SellerStartPage />} />
         <Route path="sign-in" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot" element={<ForgotPage />} />

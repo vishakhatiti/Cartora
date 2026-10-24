@@ -68,7 +68,7 @@ export default function SearchBox() {
         id="search-category"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="hidden max-w-36 shrink-0 rounded-l-xl border border-r-0 border-line-strong bg-pale px-2 text-sm font-medium sm:block"
+        className="hidden max-w-36 shrink-0 rounded-l-xl border border-r-0 border-line-strong bg-pale px-2 text-sm font-medium text-fg sm:block"
       >
         <option value="">All</option>
         {(cats.data?.categories ?? []).map((c) => <option key={c.slug} value={c.slug}>{c.label}</option>)}
@@ -89,7 +89,7 @@ export default function SearchBox() {
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
         placeholder="Search 12,000 products"
-        className="w-full rounded-xl border border-line-strong bg-cream py-2.5 pl-4 pr-20 text-sm placeholder:text-muted focus:border-primary sm:rounded-l-none"
+        className="w-full rounded-xl border border-line-strong bg-cream py-2.5 pl-4 pr-20 text-sm text-fg placeholder:text-muted focus:border-primary sm:rounded-l-none"
       />
       <button type="submit" className="absolute right-1 top-1 bottom-1 rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-fg">Search</button>
       {showList && (

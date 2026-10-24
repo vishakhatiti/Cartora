@@ -34,7 +34,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/auth-google-guest` | Google sign-in endpoint (built, tested with fakes). Guest mode is browser-only, no server session. | 1 |
 | `feature/storefront-ui` | Home, search with suggestions, filters, sort, pagination (URL state), product page with gallery, specs, rating breakdown, reviews and related products. **Built; tested with a fake API and checked in a browser against the real catalogue locally; not yet checked on the live site.** | 2 |
 | `feature/reviews` | Review list and add review, rating updates | 2 |
-| `feature/seller-mode` | Buyer/Seller switch and seller add-product | 2 |
+| `feature/seller-mode` | Buyer/Seller switch, seller activation, seller-only API and dashboard shell, reference-inspired restyle. **Built; server 208 and client 78 tests pass; switch and activation checked in a browser locally. Adding products, stock and seller orders are not built yet.** | 2 |
 | `feature/cart-wishlist` | Cart and wishlist with guest merge | 3 |
 | `feature/stripe-checkout` | Stripe Checkout and webhook | 3 |
 | `feature/orders-notifications` | Orders, order email, notification bell | 3 |

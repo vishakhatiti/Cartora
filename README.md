@@ -139,6 +139,9 @@ Built so far: the page shell, three themes, toast messages, the sign-in, registe
 | Search | Header search box with suggestions (keyboard operable). `/products` has category, brand, price and rating filters, sort and pagination; all of them live in the URL, so a result page can be shared. Deals are not offered because the dataset has none. |
 | Product page | Photo gallery, price tag, features, description, specifications, rating breakdown, reviews (from the dataset sample) and related products. Text is rendered as plain text, never as HTML. There is no cart button until the cart feature exists. |
 | Photos | Amazon-hosted photos load lazily. If a product has none, or a photo fails to load, generated artwork is drawn instead. |
+| Look | Dark green header and page bands, peach product tiles with a white photo tile, orange for active pills, pagination and key buttons, serif headings. Inspired by a reference mockup the project owner supplied; the name, imagery and layout are not copied. |
+| Buying / Selling | A two-way switch in the header (and the menu). The mode comes from the address (`/sell...`), so it survives a refresh. Guests who pick Selling go to sign-in; signed-in customers go to `/sell/start`, where one form (store name) turns the same account into a seller account. The server records it (`POST /api/seller/activate`) and the page changes only after the server confirms. `GET /api/seller/me` is seller-only (401 for guests, 403 for customers). |
+| Seller dashboard | Shows the store name from the server and an honest empty state. Creating listings, stock, seller orders and payouts are not built yet, and no numbers are shown because there are no records. |
 | Accessibility | Skip link, labelled fields with inline errors, keyboard-operable menus and tabs, visible focus, reduced-motion respected. |
 
 Not checked yet: the pages against the live API, and real Google or Gmail delivery. The automated tests use a fake API.
@@ -239,3 +242,10 @@ A 502 on the website means Vercel reached Render but got no valid reply. Check i
 | Render > Logs | `Catalogue loaded: 12000 products ...` and `Cartora API listening ...` after the latest deploy. The server loads the catalogue before it accepts requests, so a memory or file problem is logged there. |
 | Render > Events | A deploy still running, or the service waking from sleep (free plan, up to about a minute). |
 | `GET https://<render-url>/api/health` | `{"status":"ok"}` means the process is up. |
+
+## Seller API (feature/seller-mode)
+
+| Route | Access | Purpose |
+|---|---|---|
+| `POST /api/seller/activate` | Signed in, verified email | Body `{ storeName }` (2 to 60 characters; letters, numbers, spaces and `. , & ' -`). Makes the account a seller. Repeating it changes nothing and never renames an existing store. Limited to 10 attempts per 15 minutes per IP. |
+| `GET /api/seller/me` | Sellers only | The seller's store summary. The role is read from the database record, never from the browser. |

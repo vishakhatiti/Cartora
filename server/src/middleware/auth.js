@@ -22,3 +22,9 @@ export function requireAuth(req, _res, next) {
   if (!req.user) return next(new AppError(401, 'Please sign in.', 'UNAUTHENTICATED'));
   return next();
 }
+
+/** Allows only seller accounts. Use after requireAuth. The role comes from the database record, never from the client. */
+export function requireSeller(req, _res, next) {
+  if (!req.user?.isSeller) return next(new AppError(403, 'This area is for seller accounts.', 'SELLER_REQUIRED'));
+  return next();
+}

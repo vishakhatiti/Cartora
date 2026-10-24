@@ -73,6 +73,18 @@ export function createAuthService({ store, mailer, hasher, secret, googleVerifie
   return {
     publicUser,
 
+    /**
+     * Turns a verified account into a seller account. The same account keeps buying; this only adds the
+     * seller role and a store name. Calling it again for a seller changes nothing (safe to retry).
+     */
+    async becomeSeller(user, storeName) {
+      if (!user.emailVerified) throw new AppError(403, 'Verify your email before you start selling.', 'EMAIL_NOT_VERIFIED');
+      if (user.isSeller) return user;
+      const updated = await store.updateUser(user.id, { set: { isSeller: true, storeName } });
+      if (!updated) throw new AppError(404, 'Account not found.', 'NOT_FOUND');
+      return updated;
+    },
+
     /** Creates an unverified account (or refreshes an unverified one) and emails a code. */
     async register({ name, email, password }) {
       const existing = await store.findUserByEmail(email);

@@ -28,7 +28,11 @@
   --warn: #9a6415;
   --bad: #b42318;
   --info: #286a91;
-  --peach: #f2d4c3;
+  --hero: #173a2d; /* Deep Pine: header and page bands */
+  --hero-fg: #ffffff;
+  --orange: #c4550b; /* active pills, pagination, key calls to action */
+  --orange-fg: #ffffff;
+  --peach: #fcebdc;
   --coral: #d98270;
   --blue: #dce8f0;
   --lavender: #e9e1f1;
@@ -54,7 +58,11 @@
   --warn: #e0a64f;
   --bad: #ff8f84;
   --info: #6fb3dc;
-  --peach: #4a3a30;
+  --hero: #0c1410;
+  --hero-fg: #eef2ec;
+  --orange: #e8803a;
+  --orange-fg: #1d1006;
+  --peach: #2c231d;
   --coral: #d98270;
   --blue: #1f3340;
   --lavender: #30283c;
@@ -80,6 +88,10 @@
   --color-warn: var(--warn);
   --color-bad: var(--bad);
   --color-info: var(--info);
+  --color-hero: var(--hero);
+  --color-hero-fg: var(--hero-fg);
+  --color-orange: var(--orange);
+  --color-orange-fg: var(--orange-fg);
   --color-peach: var(--peach);
   --color-coral: var(--coral);
   --color-blue: var(--blue);
@@ -120,11 +132,15 @@ body {
 }
 
 /* Primary buttons and links darken to Deep Pine on hover. */
-:is(button, a).bg-primary {
+:is(button, a).bg-primary,
+:is(button, a).bg-orange {
   transition: background-color 0.18s ease, transform 0.18s ease;
 }
 :is(button, a).bg-primary:hover:not(:disabled) {
   background-color: var(--primary-hover);
+}
+:is(button, a).bg-orange:hover:not(:disabled) {
+  filter: brightness(0.92);
 }
 
 :focus-visible {

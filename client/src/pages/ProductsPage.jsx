@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
 import { formatCount } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
+import PageBand from '../components/PageBand.jsx';
 import FilterPanel from '../components/FilterPanel.jsx';
 import Pagination from '../components/Pagination.jsx';
 import { ErrorNotice, ProductGrid, ProductGridSkeleton } from '../components/ProductCard.jsx';
@@ -62,33 +63,50 @@ export default function ProductsPage() {
   const categoryLabel = cats.data?.categories.find((c) => c.slug === filters.category)?.label;
   const title = filters.q ? `Results for “${filters.q}”` : categoryLabel ?? 'All products';
 
+  const chips = [
+    filters.category && { key: 'category', label: categoryLabel ?? filters.category, remove: { category: '' } },
+    ...(filters.brand ? filters.brand.split(',').map((b) => ({ key: `brand-${b}`, label: b, remove: { brand: filters.brand.split(',').filter((x) => x !== b).join(',') } })) : []),
+    (filters.minPrice || filters.maxPrice) && { key: 'price', label: `$${filters.minPrice || '0'} – ${filters.maxPrice ? `$${filters.maxPrice}` : 'any'}`, remove: { minPrice: '', maxPrice: '' } },
+    filters.minRating && { key: 'rating', label: `${filters.minRating} stars & up`, remove: { minRating: '' } },
+  ].filter(Boolean);
+
   return (
     <div className="settle">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
-          <p className="mt-1 text-sm text-muted" aria-live="polite">
-            {results.status === 'error' ? '' : data ? `${formatCount(data.total)} ${data.total === 1 ? 'product' : 'products'}` : 'Loading…'}
-          </p>
-        </div>
+      <PageBand
+        title={title}
+        breadcrumb={<><Link className="hover:underline" to="/">Home</Link> <span aria-hidden="true">›</span> <span className="font-semibold text-orange">Products</span></>}
+        note={results.status === 'error' ? undefined : data ? `${formatCount(data.total)} ${data.total === 1 ? 'product' : 'products'} from the Cartora catalogue.` : 'Loading products…'}
+      />
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <ul className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {chips.map((c) => (
+            <li key={c.key}>
+              <button type="button" onClick={() => update(c.remove)} aria-label={`Remove filter ${c.label}`} className="flex items-center gap-1.5 rounded-full bg-pale px-3 py-1 text-sm font-medium hover:bg-line">
+                {c.label} <span aria-hidden="true">×</span>
+              </button>
+            </li>
+          ))}
+          {chips.length > 0 && <li><button type="button" onClick={clear} className="text-sm font-semibold text-primary underline-offset-2 hover:underline">Clear all</button></li>}
+        </ul>
         <label className="text-sm text-muted">Sort by{' '}
           <select value={filters.sort} onChange={(e) => update({ sort: e.target.value === 'relevance' ? '' : e.target.value })}
-            className="ml-1 rounded-lg border border-line bg-surface px-2 py-1.5 text-fg">
+            className="ml-1 rounded-full border border-line-strong bg-surface px-3 py-1.5 text-fg">
             {SORTS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[16rem_1fr]">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[17rem_1fr]">
         <aside aria-label="Filters">
-          <details className="rounded-2xl border border-line bg-surface p-4 lg:hidden">
+          <details className="rounded-2xl border border-line-strong bg-surface p-4 lg:hidden">
             <summary className="cursor-pointer font-semibold">Filters{activeCount ? ` (${activeCount})` : ''}</summary>
             <div className="mt-4">
-              <FilterPanel filters={filters} categories={categoryList} brands={data?.facets.brands.slice(0, 15) ?? []} onChange={update} onClear={clear} activeCount={activeCount} />
+              <FilterPanel filters={filters} categories={categoryList} brands={data?.facets.brands.slice(0, 15) ?? []} onChange={update} />
             </div>
           </details>
-          <div className="hidden rounded-2xl border border-line bg-surface p-4 lg:block">
-            <FilterPanel filters={filters} categories={categoryList} brands={data?.facets.brands.slice(0, 15) ?? []} onChange={update} onClear={clear} activeCount={activeCount} />
+          <div className="hidden lg:block">
+            <FilterPanel filters={filters} categories={categoryList} brands={data?.facets.brands.slice(0, 15) ?? []} onChange={update} />
           </div>
         </aside>
 
