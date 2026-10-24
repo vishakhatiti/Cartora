@@ -1,8 +1,8 @@
 // Checks WCAG contrast for every theme pair the UI relies on. Run: node scripts/check-contrast.mjs
 // Exits 1 if any pair is below its target (4.5 for text, 3 for large text and UI outlines).
 const themes = {
-  light: { bg: '#f7f5ef', cream: '#fcfaf5', surface: '#ffffff', fg: '#242923', muted: '#666b64', primary: '#214e3d', primaryHover: '#173a2d', primaryFg: '#ffffff', pale: '#e6ede6', accent: '#c6a66b', accentFg: '#242923', line: '#e5e2d9', hero: '#173a2d', heroFg: '#ffffff', orange: '#c4550b', orangeFg: '#ffffff', peach: '#fcebdc', bad: '#b42318', ok: '#237547', warn: '#9a6415', info: '#286a91' },
-  dark:  { bg: '#121a16', cream: '#16201b', surface: '#1a2520', fg: '#eef2ec', muted: '#a9b5ab', primary: '#8fb095', primaryHover: '#a8c6ad', primaryFg: '#0f1a14', pale: '#24332b', accent: '#c6a66b', accentFg: '#1d1a10', line: '#2c3b33', hero: '#0c1410', heroFg: '#eef2ec', orange: '#e8803a', orangeFg: '#1d1006', peach: '#2c231d', bad: '#ff8f84', ok: '#5fc58a', warn: '#e0a64f', info: '#6fb3dc' },
+  light: { bg: '#f5f9fb', cream: '#fbfdfe', surface: '#ffffff', fg: '#14262e', muted: '#4d6670', primary: '#0a7570', primaryHover: '#085e5b', primaryFg: '#ffffff', pale: '#dff3f0', accent: '#f5b335', accentFg: '#1e1606', line: '#dde8ec', hero: '#0a3340', heroFg: '#ffffff', orange: '#cc4309', orangeFg: '#ffffff', peach: '#ffe9d9', bad: '#c0281d', ok: '#167a42', warn: '#a15c07', info: '#1d6fb8' },
+  dark : { bg: '#0d171b', cream: '#101d22', surface: '#14232a', fg: '#eaf4f6', muted: '#9fb6bd', primary: '#4fd1c5', primaryHover: '#7ee3d9', primaryFg: '#05201d', pale: '#1a3038', accent: '#f5b335', accentFg: '#1e1606', line: '#23373f', hero: '#071013', heroFg: '#eaf4f6', orange: '#ff7a3d', orangeFg: '#1d0c04', peach: '#2e2119', bad: '#ff8f84', ok: '#52d68a', warn: '#f0b050', info: '#6cb8f0' },
 };
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)

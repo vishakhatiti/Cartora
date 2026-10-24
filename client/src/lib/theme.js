@@ -1,6 +1,6 @@
 export const THEMES = [
-  { id: 'light', label: 'Ivory', swatch: ['#f7f5ef', '#214e3d'] },
-  { id: 'dark', label: 'Night', swatch: ['#121a16', '#8fb095'] },
+  { id: 'light', label: 'Ivory', swatch: ['#f5f9fb', '#0a7570'] },
+  { id: 'dark', label: 'Night', swatch: ['#0d171b', '#4fd1c5'] },
 ];
 
 const KEY = 'cartora-theme';
