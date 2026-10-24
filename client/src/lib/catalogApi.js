@@ -22,5 +22,6 @@ export const catalogApi = {
   product: (id, signal) => apiFetch(`/products/${encodeURIComponent(id)}`, { signal }),
   reviews: (id, params, signal) => apiFetch(withQuery(`/products/${encodeURIComponent(id)}/reviews`, params), { signal }),
   related: (id, signal) => apiFetch(`/products/${encodeURIComponent(id)}/related`, { signal }),
+  discover: (kind, params, signal) => apiFetch(withQuery(`/discover/${encodeURIComponent(kind)}`, params), { signal }),
   suggestions: (q, signal) => apiFetch(withQuery('/search/suggestions', { q }), { signal }),
 };

@@ -27,9 +27,15 @@ export function fakeCommerce(overrides = {}) {
   let serverItems = [];
   const sessions = new Map();
   const orders = new Map();
+  let wishIds = [];
+  const wishOf = () => ({ wishlist: { ids: [...wishIds], count: wishIds.length, items: wishIds.map((id) => ({ id, title: PRICES[id]?.title ?? id, brand: PRICES[id]?.brand ?? '', category: { slug: 'electronics', label: 'Electronics' }, priceCents: PRICES[id]?.priceCents ?? 100, finalPriceCents: PRICES[id]?.priceCents ?? 100, deal: null, images: [], ratingAvg: 4, ratingCount: 1 })) } });
+  let book = [];
+  let notes = [];
+  const tickets = [];
+  const bookOf = () => ({ addresses: book.map((a) => ({ ...a })) });
   const cartOf = () => ({ cart: price(serverItems) });
   const api = {
-    state: { get items() { return serverItems; }, sessions, orders },
+    state: { get items() { return serverItems; }, get wishlist() { return wishIds; }, get addresses() { return book; }, pushNotification(n) { notes = [{ id: `n${notes.length + 1}`, read: false, createdAt: '2026-10-24T10:00:00.000Z', link: null, ...n }, ...notes]; }, sessions, orders },
     quote: vi.fn((items) => Promise.resolve({ cart: price(items) })),
     getCart: vi.fn(() => Promise.resolve(cartOf())),
     setQuantity: vi.fn((productId, qty) => {
@@ -45,6 +51,31 @@ export function fakeCommerce(overrides = {}) {
       }
       return Promise.resolve({ ...cartOf(), merged: items.length - skipped.length, skipped });
     }),
+    getWishlist: vi.fn(() => Promise.resolve(wishOf())),
+    addWishlist: vi.fn((id) => { wishIds = [id, ...wishIds.filter((x) => x !== id)]; return Promise.resolve(wishOf()); }),
+    removeWishlist: vi.fn((id) => { wishIds = wishIds.filter((x) => x !== id); return Promise.resolve(wishOf()); }),
+    listAddresses: vi.fn(() => Promise.resolve(bookOf())),
+    addAddress: vi.fn((address, makeDefault = false) => {
+      if (makeDefault || book.length === 0) book = book.map((a) => ({ ...a, isDefault: false }));
+      book = [...book, { ...address, id: `addr_${book.length + 1}`, isDefault: makeDefault || book.length === 0 }];
+      return Promise.resolve(bookOf());
+    }),
+    updateAddress: vi.fn((id, address) => { book = book.map((a) => (a.id === id ? { ...address, id, isDefault: a.isDefault } : a)); return Promise.resolve(bookOf()); }),
+    setDefaultAddress: vi.fn((id) => { book = book.map((a) => ({ ...a, isDefault: a.id === id })); return Promise.resolve(bookOf()); }),
+    deleteAddress: vi.fn((id) => {
+      const wasDefault = book.find((a) => a.id === id)?.isDefault;
+      book = book.filter((a) => a.id !== id);
+      if (wasDefault && book[0]) book[0] = { ...book[0], isDefault: true };
+      return Promise.resolve(bookOf());
+    }),
+    createTicket: vi.fn((data) => {
+      const ticket = { id: `t${tickets.length + 1}`, ticketNumber: 'SUP-TESTTICK', topic: data.topic, orderNumber: data.orderNumber ?? null, message: data.message, status: 'open', createdAt: '2026-10-24T10:00:00.000Z' };
+      tickets.unshift(ticket);
+      return Promise.resolve({ ticket });
+    }),
+    listTickets: vi.fn(() => Promise.resolve({ tickets: [...tickets] })),
+    notifications: vi.fn(() => Promise.resolve({ items: notes.map((n) => ({ ...n })), unread: notes.filter((n) => !n.read).length })),
+    markNotificationsRead: vi.fn(() => { notes = notes.map((n) => ({ ...n, read: true })); return Promise.resolve({ items: notes.map((n) => ({ ...n })), unread: 0 }); }),
     checkoutConfig: vi.fn(() => Promise.resolve({ provider: 'demo', demo: true, label: 'Demo Mode — No Real Money Charged' })),
     startCheckout: vi.fn((address) => {
       const cart = price(serverItems);
@@ -69,6 +100,7 @@ export function fakeCommerce(overrides = {}) {
       serverItems = [];
       return Promise.resolve({ demo: true, session: s, order });
     }),
+    listOrders: vi.fn(() => Promise.resolve({ orders: [...orders.values()].reverse() })),
     getOrder: vi.fn((id) => (orders.has(id) ? Promise.resolve({ order: orders.get(id) }) : Promise.reject(new ApiError(404, 'NOT_FOUND', 'Order not found.')))),
   };
   return Object.assign(api, overrides);

@@ -39,6 +39,10 @@ export function stubCatalogFetch(overrides = {}) {
     '/api/health/ready': () => ({}),
     '/api/categories': () => ({ categories }),
     '/api/search/suggestions': () => ({ products: [{ id: 'B0TEST0001', title: 'Noise-cancelling Headphones', category: 'Electronics' }], categories: [{ slug: 'electronics', label: 'Electronics', count: 500 }] }),
+    '/api/discover': (url) => ({
+      kind: url.pathname.split('/').pop(), basis: 'Ranked by test data.', page: 1, pageSize: 4, total: 2, totalPages: 1,
+      items: [makeProduct(), makeProduct({ id: 'B0TEST0002', title: 'Paperback Novel', brand: '', category: { slug: 'books', label: 'Books' }, finalPriceCents: 1299, priceCents: 1299, images: [], hasRealImage: false, imageKind: 'none' })],
+    }),
     '/api/products': () => ({ items: [makeProduct(), makeProduct({ id: 'B0TEST0002', title: 'Paperback Novel', brand: '', category: { slug: 'books', label: 'Books' }, finalPriceCents: 1299, priceCents: 1299, images: [], hasRealImage: false, imageKind: 'none' })], page: 1, pageSize: 24, total: 2, totalPages: 1, facets: { categories: [{ slug: 'electronics', count: 1 }, { slug: 'books', count: 1 }], brands: [{ name: 'Acme', count: 1 }] } }),
   };
   const routes = { ...defaults, ...overrides };

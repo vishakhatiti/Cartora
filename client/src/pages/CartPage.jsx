@@ -42,7 +42,10 @@ export default function CartPage() {
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
           <div>
             {cart.issues.length > 0 && (
-              <p role="alert" className="mb-4 rounded-2xl bg-butter px-4 py-3 text-sm font-medium">Some items are no longer available and were left out of your total.</p>
+              <div role="alert" className="mb-4 rounded-2xl bg-butter px-4 py-3 text-sm font-medium">
+                <p>Some items could not be included and were left out of your total.</p>
+                <ul className="mt-1 list-disc pl-5">{cart.issues.map((i) => <li key={i.productId}>{i.message ?? 'This product is no longer available.'}</li>)}</ul>
+              </div>
             )}
             <ul className="space-y-3" aria-label="Items in your cart">
               {cart.lines.map((l) => (

@@ -4,9 +4,12 @@ import { catalogApi } from '../lib/catalogApi.js';
 import { useRemote } from '../hooks/useRemote.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import { SHELVES } from '../lib/shelves.js';
+import NotificationBell from './NotificationBell.jsx';
 import ModeSwitch from './ModeSwitch.jsx';
 import Footer from './Footer.jsx';
 import NavDrawer from './NavDrawer.jsx';
+import SellerNav from './SellerNav.jsx';
 import SearchBox from './SearchBox.jsx';
 import ThemeSwitcher from './ThemeSwitcher.jsx';
 import UserMenu from './UserMenu.jsx';
@@ -32,6 +35,11 @@ function CartLink() {
   );
 }
 
+function BellWhenSignedIn() {
+  const { user } = useAuth();
+  return user ? <NotificationBell /> : null;
+}
+
 function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2 font-display text-2xl text-hero-fg" aria-label="Cartora home">
@@ -54,10 +62,14 @@ function SecondRow() {
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 sm:px-8">
         <ModeSwitch />
         {selling ? (
-          <p className="truncate text-sm text-hero-fg/85">Seller workspace{user?.storeName ? ` · ${user.storeName}` : ''}</p>
+          <>
+            <p className="hidden shrink-0 truncate text-sm text-hero-fg/85 lg:block">Seller workspace{user?.storeName ? ` · ${user.storeName}` : ''}</p>
+            <SellerNav pill={pill} />
+          </>
         ) : (
           <nav aria-label="Categories" className="min-w-0 flex-1">
             <ul className="flex gap-1 overflow-x-auto">
+              {SHELVES.map((sh) => <li key={sh.slug}><NavLink to={`/${sh.slug}`} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>{sh.short}</NavLink></li>)}
               <li><NavLink to="/products" end className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>All products</NavLink></li>
               {items.slice(0, 10).map((c) => (
                 <li key={c.slug}><Link to={`/products?category=${c.slug}`} className={pill}>{c.label}</Link></li>
@@ -91,6 +103,7 @@ export default function Layout() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <ThemeSwitcher />
+            <BellWhenSignedIn />
             <CartLink />
             <AccountArea />
           </div>

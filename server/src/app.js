@@ -4,6 +4,10 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
+import { createNotificationsRouter } from './routes/notifications.js';
+import { createSupportRouter } from './routes/support.js';
+import { createAddressRouter } from './routes/addresses.js';
+import { createWishlistRouter } from './routes/wishlist.js';
 import { createCartRouter } from './routes/cart.js';
 import { createCheckoutRouter } from './routes/checkout.js';
 import { createOrdersRouter } from './routes/orders.js';
@@ -58,11 +62,16 @@ export function createApp(env, { catalog, authService, commerce: commerceOverrid
   app.use('/api/health', healthRouter);
   app.use('/api/auth', createAuthRouter({ authService: auth, env, secret: env.JWT_SECRET }));
   const getCatalog = () => catalog ?? getDefaultCatalog();
-  const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env) });
+  const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env), mailer: createMailer(env), appUrl: env.FRONTEND_URL });
   app.use('/api/cart', createCartRouter({ carts: commerce.carts }));
+  app.use('/api/notifications', createNotificationsRouter({ notifications: commerce.notifications }));
+  app.use('/api/support', createSupportRouter({ support: commerce.support }));
+  app.use('/api/addresses', createAddressRouter({ addresses: commerce.addresses }));
+  app.use('/api/wishlist', createWishlistRouter({ wishlist: commerce.wishlist }));
   app.use('/api/checkout', createCheckoutRouter({ checkout: commerce.checkout }));
   app.use('/api/orders', createOrdersRouter({ checkout: commerce.checkout }));
-  app.use('/api/seller', createSellerRouter({ authService: auth }));
+  app.use('/api/seller', createSellerRouter({ authService: auth, seller: commerce.seller }));
+  app.locals.commerce = commerce; // server.js loads seller listings into the catalogue at startup
   app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 
   app.use(notFound);

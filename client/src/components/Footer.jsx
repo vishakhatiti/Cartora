@@ -17,7 +17,9 @@ export default function Footer() {
           <h2 className="font-sans text-xs font-bold uppercase tracking-wide text-primary-fg/70">Shop</h2>
           <ul className="mt-3 space-y-2">
             <li><Link className={link} to="/products">All products</Link></li>
-            <li><Link className={link} to="/">Home</Link></li>
+            <li><Link className={link} to="/trending">Trending now</Link></li>
+            <li><Link className={link} to="/best-sellers">Best sellers</Link></li>
+            <li><Link className={link} to="/new-releases">New releases</Link></li>
           </ul>
         </nav>
         <nav aria-label="Account and project">
@@ -31,8 +33,10 @@ export default function Footer() {
                 <li><Link className={link} to="/register">Create account</Link></li>
               </>
             )}
+            <li><Link className={link} to="/orders">Your orders</Link></li>
+            <li><Link className={link} to="/wishlist">Wishlist</Link></li>
+            <li><Link className={link} to="/help">Customer service</Link></li>
             <li><Link className={link} to="/sell">Sell on Cartora</Link></li>
-            <li><a className={link} href="https://github.com/vishakhatiti/Cartora">Built in the open on GitHub</a></li>
           </ul>
         </nav>
       </div>

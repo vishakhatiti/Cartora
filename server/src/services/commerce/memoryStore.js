@@ -6,6 +6,14 @@ import { randomUUID } from 'node:crypto';
  */
 export function createMemoryCommerceStore() {
   const carts = new Map(); // userId -> [{ productId, qty }]
+  const wishlists = new Map(); // userId -> [productId]
+  const addressBooks = new Map(); // userId -> [address]
+  const tickets = [];
+  const listings = new Map();
+  const notifications = [];
+  let seq = 0; // breaks ties between records created in the same millisecond, newest first
+  const newestFirst = (a, b) => (b.createdAt - a.createdAt) || (b.seq - a.seq);
+  const publicCopy = ({ seq: _seq, ...rest }) => clone(rest);
   const sessions = new Map();
   const orders = new Map();
   const orderIdBySession = new Map();
@@ -18,6 +26,91 @@ export function createMemoryCommerceStore() {
     async setCartItems(userId, items) {
       if (items.length === 0) carts.delete(userId); else carts.set(userId, clone(items));
       return clone(items);
+    },
+
+    async getWishlistIds(userId) {
+      return [...(wishlists.get(userId) ?? [])];
+    },
+    async setWishlistIds(userId, ids) {
+      if (ids.length === 0) wishlists.delete(userId); else wishlists.set(userId, [...ids]);
+      return [...ids];
+    },
+
+    async getAddresses(userId) {
+      return clone(addressBooks.get(userId) ?? []);
+    },
+    async setAddresses(userId, addresses) {
+      if (addresses.length === 0) addressBooks.delete(userId); else addressBooks.set(userId, clone(addresses));
+      return clone(addresses);
+    },
+
+    async createTicket(data) {
+      const ticket = { ...clone(data), id: randomUUID(), status: 'open', createdAt: new Date(), seq: (seq += 1) };
+      tickets.push(ticket);
+      return publicCopy(ticket);
+    },
+    async listTicketsForUser(userId) {
+      return tickets.filter((t) => t.userId === userId).sort(newestFirst).map(publicCopy);
+    },
+
+    // ---- seller listings
+    async createListing(data) {
+      const listing = { ...clone(data), isActive: true, createdAt: new Date(), updatedAt: new Date(), seq: (seq += 1) };
+      listings.set(listing.id, listing);
+      return publicCopy(listing);
+    },
+    async updateListing(id, sellerId, patch) {
+      const listing = listings.get(id);
+      if (!listing || listing.sellerId !== sellerId) return null;
+      Object.assign(listing, clone(patch), { updatedAt: new Date() });
+      return publicCopy(listing);
+    },
+    async findListing(id) {
+      return listings.has(id) ? publicCopy(listings.get(id)) : null;
+    },
+    async listListingsForSeller(sellerId) {
+      return [...listings.values()].filter((l) => l.sellerId === sellerId).sort(newestFirst).map(publicCopy);
+    },
+    async listActiveListings() {
+      return [...listings.values()].filter((l) => l.isActive).map(publicCopy);
+    },
+    /** Returns the listings whose stock changed, so the shop can be updated to match. */
+    async consumeStock(items) {
+      const changed = new Map();
+      for (const item of items) {
+        const listing = item.sellerId ? listings.get(item.productId) : null;
+        if (listing && listing.sellerId === item.sellerId) {
+          listing.stockQty = Math.max(0, listing.stockQty - item.qty);
+          changed.set(listing.id, publicCopy(listing));
+        }
+      }
+      return [...changed.values()];
+    },
+
+    async listOrdersForSeller(sellerId) {
+      return [...orders.values()].filter((o) => o.items.some((i) => i.sellerId === sellerId)).sort(newestFirst).map(publicCopy);
+    },
+    async markSellerItemsShipped(orderId, sellerId, at) {
+      const order = orders.get(orderId);
+      if (!order || !order.items.some((i) => i.sellerId === sellerId)) return null;
+      for (const item of order.items) if (item.sellerId === sellerId && item.fulfilment !== 'shipped') { item.fulfilment = 'shipped'; item.shippedAt = at; }
+      if (order.items.every((i) => i.fulfilment === 'shipped') && order.status === 'paid') { order.status = 'shipped'; order.timeline.push({ status: 'shipped', at }); }
+      return clone(order);
+    },
+
+    async createNotification(data) {
+      const n = { ...clone(data), id: randomUUID(), readAt: null, createdAt: new Date(), seq: (seq += 1) };
+      notifications.push(n);
+      return publicCopy(n);
+    },
+    async listNotifications(userId) {
+      return notifications.filter((n) => n.userId === userId).sort(newestFirst).slice(0, 30).map(publicCopy);
+    },
+    async countUnreadNotifications(userId) {
+      return notifications.filter((n) => n.userId === userId && !n.readAt).length;
+    },
+    async markNotificationsRead(userId) {
+      for (const n of notifications) if (n.userId === userId && !n.readAt) n.readAt = new Date();
     },
 
     async createSession(data) {
@@ -43,17 +136,17 @@ export function createMemoryCommerceStore() {
     /** Insert the order for a payment session. A second call for the same session returns the first order. */
     async createOrderForSession(data) {
       const existingId = orderIdBySession.get(data.payment.sessionId);
-      if (existingId) return { order: clone(orders.get(existingId)), created: false };
-      const order = { ...clone(data), id: randomUUID(), createdAt: new Date() };
+      if (existingId) return { order: publicCopy(orders.get(existingId)), created: false };
+      const order = { ...clone(data), items: data.items.map((i) => ({ fulfilment: 'pending', ...clone(i) })), id: randomUUID(), createdAt: new Date(), seq: (seq += 1) };
       orders.set(order.id, order);
       orderIdBySession.set(order.payment.sessionId, order.id);
-      return { order: clone(order), created: true };
+      return { order: publicCopy(order), created: true };
     },
     async findOrder(id) {
-      return clone(orders.get(id) ?? null);
+      return orders.has(id) ? publicCopy(orders.get(id)) : null;
     },
     async listOrdersForUser(userId) {
-      return [...orders.values()].filter((o) => o.userId === userId).sort((a, b) => b.createdAt - a.createdAt).map(clone);
+      return [...orders.values()].filter((o) => o.userId === userId).sort(newestFirst).map(publicCopy);
     },
   };
 }

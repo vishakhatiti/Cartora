@@ -64,32 +64,13 @@ export const authApi = {
 
 export const sellerApi = {
   me: (signal) => apiFetch('/seller/me', { signal }),
+  summary: (signal) => apiFetch('/seller/summary', { signal }),
+  products: (signal) => apiFetch('/seller/products', { signal }),
+  createProduct: (data) => apiFetch('/seller/products', { method: 'POST', body: data }),
+  updateProduct: (id, data) => apiFetch(`/seller/products/${encodeURIComponent(id)}`, { method: 'PUT', body: data }),
+  orders: (signal) => apiFetch('/seller/orders', { signal }),
+  ship: (orderId) => apiFetch(`/seller/orders/${encodeURIComponent(orderId)}/ship`, { method: 'POST' }),
 };
-
-/**
- * Check the API. Returns one of:
- *   'ready'        the API is up and MongoDB is connected
- *   'db_down'      the API is up but MongoDB is not connected
- *   'unreachable'  no usable response (offline, still waking up, or misconfigured)
- */
-export async function fetchApiStatus(signal) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  signal?.addEventListener('abort', () => controller.abort(), { once: true });
-  try {
-    const res = await fetch(`${BASE}/health/ready`, {
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    if (res.ok) return 'ready';
-    if (res.status === 503) return 'db_down';
-    return 'unreachable';
-  } catch {
-    return 'unreachable';
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 const toBody = (items) => ({ items: items.map(({ productId, qty }) => ({ productId, qty })) });
 
@@ -100,9 +81,22 @@ export const commerceApi = {
   setQuantity: (productId, qty) => apiFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: 'PUT', body: { qty } }),
   removeItem: (productId) => apiFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: 'DELETE' }),
   merge: (items) => apiFetch('/cart/merge', { method: 'POST', body: toBody(items) }),
+  getWishlist: (signal) => apiFetch('/wishlist', { signal }),
+  addWishlist: (productId) => apiFetch(`/wishlist/items/${encodeURIComponent(productId)}`, { method: 'PUT' }),
+  removeWishlist: (productId) => apiFetch(`/wishlist/items/${encodeURIComponent(productId)}`, { method: 'DELETE' }),
+  listAddresses: (signal) => apiFetch('/addresses', { signal }),
+  addAddress: (address, makeDefault = false) => apiFetch('/addresses', { method: 'POST', body: { address, makeDefault } }),
+  updateAddress: (id, address) => apiFetch(`/addresses/${encodeURIComponent(id)}`, { method: 'PUT', body: { address } }),
+  setDefaultAddress: (id) => apiFetch(`/addresses/${encodeURIComponent(id)}/default`, { method: 'POST' }),
+  deleteAddress: (id) => apiFetch(`/addresses/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  createTicket: (data) => apiFetch('/support/tickets', { method: 'POST', body: data }),
+  listTickets: (signal) => apiFetch('/support/tickets', { signal }),
+  notifications: (signal) => apiFetch('/notifications', { signal }),
+  markNotificationsRead: () => apiFetch('/notifications/read', { method: 'POST' }),
   checkoutConfig: (signal) => apiFetch('/checkout/config', { signal }),
   startCheckout: (address) => apiFetch('/checkout/sessions', { method: 'POST', body: { address } }),
   getSession: (id, signal) => apiFetch(`/checkout/sessions/${encodeURIComponent(id)}`, { signal }),
   simulate: (id, outcome) => apiFetch(`/checkout/sessions/${encodeURIComponent(id)}/simulate`, { method: 'POST', body: { outcome } }),
+  listOrders: (signal) => apiFetch('/orders', { signal }),
   getOrder: (id, signal) => apiFetch(`/orders/${encodeURIComponent(id)}`, { signal }),
 };

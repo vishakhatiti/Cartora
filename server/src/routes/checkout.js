@@ -3,17 +3,8 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { AppError } from '../utils/AppError.js';
 import { requireAuth } from '../middleware/auth.js';
+import { addressSchema } from '../utils/addressSchema.js';
 
-const text = (max) => z.string().trim().min(1, 'This field is required.').max(max);
-const addressSchema = z.object({
-  name: text(80),
-  line1: text(120),
-  line2: z.string().trim().max(120).optional().transform((v) => v || undefined),
-  city: text(80),
-  state: text(80),
-  postalCode: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9 -]{1,10}[A-Za-z0-9]$/, 'Enter a valid postal code.'),
-  country: z.string().trim().regex(/^[A-Za-z]{2}$/, 'Use a two-letter country code, for example US.').transform((v) => v.toUpperCase()),
-});
 const startBody = z.object({ address: addressSchema });
 const simulateBody = z.object({ outcome: z.enum(['success', 'failure']) });
 const idParam = z.string().trim().min(1).max(64);

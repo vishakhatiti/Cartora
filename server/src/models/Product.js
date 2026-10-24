@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true, maxlength: 300 },
     brand: { type: String, trim: true, maxlength: 120 },
     category: { type: String, required: true, trim: true, index: true },
+    categoryLabel: { type: String, trim: true, maxlength: 120 },
     description: { type: String, trim: true, maxlength: 4000 },
     features: { type: [String], default: [] },
     // Key/value specifications such as Color or Material.

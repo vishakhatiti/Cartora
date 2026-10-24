@@ -29,7 +29,16 @@ try {
   process.exit(1);
 }
 
-const server = createApp(env).listen(env.PORT, () => {
+const app = createApp(env);
+try {
+  const count = await app.locals.commerce.seller.hydrate();
+  console.log(`Seller listings loaded: ${count}`);
+} catch (err) {
+  console.error(`Seller listings could not be loaded: ${err.message}`);
+  process.exit(1);
+}
+
+const server = app.listen(env.PORT, () => {
   console.log(`Cartora API listening on port ${env.PORT} (${env.NODE_ENV})`);
 });
 

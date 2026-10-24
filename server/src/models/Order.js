@@ -32,7 +32,11 @@ const orderSchema = new mongoose.Schema(
           image: String,
           unitPriceCents: { type: Number, required: true, min: 0, validate: Number.isInteger },
           qty: { type: Number, required: true, min: 1, max: MAX_QTY_PER_ITEM, validate: Number.isInteger },
-          sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+          // Seller listings carry the seller's user id; dataset products have none (Cartora Marketplace).
+          sellerId: { type: String, default: null },
+          storeName: { type: String, default: null },
+          fulfilment: { type: String, enum: ['pending', 'shipped'], default: 'pending' },
+          shippedAt: { type: Date, default: null },
           brand: String,
         },
       ],

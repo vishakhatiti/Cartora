@@ -49,7 +49,14 @@ export default function OrderPage() {
               </div>
             )}
           </dl>
-          <p className="text-sm text-muted">Tracking and delivery dates are not available yet.</p>
+          {o.items.some((i) => i.storeName) && (
+            <ul className="space-y-1 text-sm" aria-label="Shipping progress">
+              {o.items.filter((i) => i.storeName).map((i) => (
+                <li key={i.productId}><strong>{i.title}</strong> from {i.storeName}: {i.fulfilment === 'shipped' ? `shipped${i.shippedAt ? ` on ${formatDate(i.shippedAt)}` : ''}` : 'waiting for the seller to ship'}</li>
+              ))}
+            </ul>
+          )}
+          <p className="text-sm text-muted">Tracking numbers and delivery dates are not available yet.</p>
           <Link to="/products" className="inline-block rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-fg">Continue shopping</Link>
         </section>
         <OrderSummary title="Items" lines={o.items.map((i) => ({ ...i, category: null }))} totals={o} />

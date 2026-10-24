@@ -164,3 +164,14 @@ describe('product page', () => {
     expect(document.querySelector('img[src="x"]')).toBeNull();
   });
 });
+
+describe('ranked shelves', () => {
+  it('shows a shelf page with its ranking note and a category filter', async () => {
+    const spy = stubCatalogFetch();
+    renderApp({ route: '/best-sellers' });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Best sellers' })).toBeInTheDocument();
+    expect(await screen.findByText('Ranked by test data.')).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText(/Category/), 'books');
+    await waitFor(() => expect(spy.mock.calls.some(([u]) => String(u).includes('/discover/best-sellers') && String(u).includes('category=books'))).toBe(true));
+  });
+});

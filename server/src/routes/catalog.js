@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { AppError } from '../utils/AppError.js';
 import { dollarsToCents } from '../utils/money.js';
-import { MAX_PAGE_SIZE, SORTS, REVIEW_SORTS, DEFAULT_PAGE_SIZE } from '../services/catalog/catalog.js';
+import { MAX_PAGE_SIZE, DISCOVER_KINDS, SORTS, REVIEW_SORTS, DEFAULT_PAGE_SIZE } from '../services/catalog/catalog.js';
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;
 
@@ -78,9 +78,23 @@ export function createCatalogRouter(getCatalog) {
     cacheable(res).json(result);
   });
 
+  router.get('/discover/:kind', (req, res) => {
+    const kind = z.enum(DISCOVER_KINDS).safeParse(req.params.kind);
+    if (!kind.success) throw new AppError(404, 'Unknown shelf', 'NOT_FOUND');
+    const query = parse(z.object({
+      category: z.string().trim().max(80).optional(),
+      page: z.coerce.number().int().min(1).max(10_000).optional(),
+      pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).optional(),
+    }), req.query);
+    const catalog = getCatalog();
+    if (query.category && !catalog.hasCategory(query.category)) throw new AppError(404, 'Unknown category', 'NOT_FOUND');
+    cacheable(res).json(catalog.discover(kind.data, query));
+  });
+
   router.get('/products/:id', (req, res) => {
     const id = ID_PATTERN.test(req.params.id) ? req.params.id : null;
-    cacheable(res).json({ product: productOr404(id && getCatalog().getDetail(id)) });
+    // Price and stock can change when a seller edits a listing or a sale completes, so browsers must revalidate (ETag keeps it cheap).
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate').json({ product: productOr404(id && getCatalog().getDetail(id)) });
   });
 
   router.get('/products/:id/reviews', (req, res) => {

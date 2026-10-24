@@ -27,9 +27,11 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 - Guest mode, register with email verification, password login, emailed login codes, forgot-password codes, Google sign-in
 - Product browsing with search, category and price filters, deals, sorting and pagination
 - Product pages with reviews; signed-in users can add reviews
-- Buyer / Seller switch: sellers add products from a dashboard
-- Cart, wishlist, Stripe Checkout payments, order history
-- Emails through the Gmail API (OTP codes, login alerts, order confirmations)
+- One account, two modes: a Buying / Selling switch in the header
+- Buying: Trending, Best sellers and New releases shelves (ranked from real review dates and counts, each with a "basis" line), cart, wishlist, saved addresses, order list and tracking, customer service form, notification bell
+- Selling: dashboard, product list, add and edit product, stock, orders to ship (sellers see only their own items and the ship-to address, never the buyer's email)
+- Demo checkout (labelled "Demo Mode — No Real Money Charged"); Stripe Checkout once test keys exist
+- Emails through the Gmail API (OTP codes, login alerts, order confirmations; order emails are best effort)
 - Responsive layout with animations, hover effects, toast messages and skeleton loaders
 
 ## Tech stack
@@ -161,6 +163,22 @@ Built so far: the page shell, three themes, toast messages, the sign-in, registe
 | Accessibility | Skip link, labelled fields with inline errors, keyboard-operable menus and tabs, visible focus, reduced-motion respected. |
 
 Not checked yet: the pages against the live API, and real Google or Gmail delivery. The automated tests use a fake API.
+
+## Buyer and seller API (feature/buyer-experience)
+
+| Route | Access | Purpose |
+|---|---|---|
+| `GET /api/discover/:kind` | Public | `trending`, `best-sellers`, `new-releases`. Returns `basis`, the plain-language ranking rule. |
+| `GET/PUT/DELETE /api/wishlist...` | Signed in | List, add (`PUT /items/:productId`), remove. No guest wishlist. |
+| `/api/addresses` | Signed in | List, create, update, set default, delete saved addresses. |
+| `POST /api/support/tickets`, `GET /api/support/tickets` | Create: anyone (rate limited). List: signed in | Customer service requests. |
+| `GET /api/notifications`, `POST /api/notifications/read` | Signed in | Notification bell. |
+| `GET /api/seller/summary`, `GET/POST /api/seller/products`, `PUT /api/seller/products/:id` | Sellers only | Dashboard figures, own listings, create, edit, stock. |
+| `GET /api/seller/orders`, `POST /api/seller/orders/:id/ship` | Sellers only | Own order items; mark shipped. The order is "shipped" once every item is shipped. |
+
+**Behaviour:** seller listings are stored in MongoDB and loaded into the in-memory catalogue at start-up. Stock is checked when the cart changes and when checkout starts, and is deducted only when payment succeeds. Product detail responses use `must-revalidate` so price and stock are not stale.
+
+**Known limitations:** two buyers can race for the last unit (no stock reservation); no order cancellation, returns or tracking numbers; wishlist needs an account; the Mongo store contract tests run in CI only; order email delivery through Gmail has not been tried live; the live site has not been re-checked since this feature.
 
 ## Environment variables
 
