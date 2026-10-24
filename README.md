@@ -123,6 +123,21 @@ Check usage in Atlas under Database > Metrics. If it nears the limit, the first 
 
 **Tests:** `npm test` runs the auth tests against an in-memory store. In CI the same contract tests also run against a real MongoDB (set `MONGO_TEST_URL` to run them yourself).
 
+## Website (feature/client-shell-themes)
+
+Built so far: the page shell, three themes, toast messages, and the sign-in, register and forgot-password pages. The product pages, cart and checkout are not built yet.
+
+| Part | Detail |
+|---|---|
+| Themes | Harbor (light), Night (dark) and Sunset (dark plum and coral), chosen with the three swatches in the header and remembered in the browser. All colours are tokens in `client/src/styles/index.css`; `node client/scripts/check-contrast.mjs` checks every text and background pair against WCAG AA. |
+| Type | Bricolage Grotesque for headings and Figtree for text, both bundled with the app (no request to Google Fonts). |
+| Sign-in page | Password or emailed code, Google button, links to create an account, reset a password, or continue as guest. |
+| Guest | "Continue as guest" goes to the store. Nothing needs an account yet, and there is no server session for guests. |
+| Google button | Shown only when `VITE_GOOGLE_CLIENT_ID` is set on Vercel, so there is never a dead button. |
+| Accessibility | Skip link, labelled fields with inline errors, keyboard-operable menus and tabs, visible focus, reduced-motion respected. |
+
+Not checked yet: the pages against the live API, and real Google or Gmail delivery. The automated tests use a fake API.
+
 ## Environment variables
 
 Real values are never committed. Copy the example files and fill them in.

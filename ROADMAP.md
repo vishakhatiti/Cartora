@@ -38,7 +38,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/cart-wishlist` | Cart and wishlist with guest merge | 3 |
 | `feature/stripe-checkout` | Stripe Checkout and webhook | 3 |
 | `feature/orders-notifications` | Orders, order email, notification bell | 3 |
-| `feature/client-shell-themes` | React app shell, routing, three themes | 0-4 |
+| `feature/client-shell-themes` | React app shell, routing, three themes, toasts, sign-in/register/forgot pages. **Built; tested with a fake API, not yet against the live API.** | 0-4 |
 | `feature/ui-polish` | Animations, toasts, modals, skeletons, responsive pass | 4 |
 | `feature/deployment` | Render and Vercel configuration, smoke test | 5 |
 
