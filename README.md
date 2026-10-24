@@ -125,7 +125,7 @@ Check usage in Atlas under Database > Metrics. If it nears the limit, the first 
 
 ## Website (feature/client-shell-themes)
 
-Built so far: the page shell, three themes, toast messages, and the sign-in, register and forgot-password pages. The product pages, cart and checkout are not built yet.
+Built so far: the page shell, three themes, toast messages, the sign-in, register and forgot-password pages, and the storefront (home, search, product pages). The cart, checkout and selling are not built yet.
 
 | Part | Detail |
 |---|---|
@@ -134,6 +134,10 @@ Built so far: the page shell, three themes, toast messages, and the sign-in, reg
 | Sign-in page | Password or emailed code, Google button, links to create an account, reset a password, or continue as guest. |
 | Guest | "Continue as guest" goes to the store. Nothing needs an account yet, and there is no server session for guests. |
 | Google button | Shown only when `VITE_GOOGLE_CLIENT_ID` is set on Vercel, so there is never a dead button. |
+| Home | Hero, 24 category tiles and the most-rated products, all from the catalog API. |
+| Search | Header search box with suggestions (keyboard operable). `/products` has category, brand, price and rating filters, sort and pagination; all of them live in the URL, so a result page can be shared. Deals are not offered because the dataset has none. |
+| Product page | Photo gallery, price tag, features, description, specifications, rating breakdown, reviews (from the dataset sample) and related products. Text is rendered as plain text, never as HTML. There is no cart button until the cart feature exists. |
+| Photos | Amazon-hosted photos load lazily. If a product has none, or a photo fails to load, generated artwork is drawn instead. |
 | Accessibility | Skip link, labelled fields with inline errors, keyboard-operable menus and tabs, visible focus, reduced-motion respected. |
 
 Not checked yet: the pages against the live API, and real Google or Gmail delivery. The automated tests use a fake API.

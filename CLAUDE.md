@@ -27,7 +27,7 @@ Cartora is a MERN e-commerce marketplace. Read `ROADMAP.md` for scope, phases an
 7. **Honesty.** Do not say tests pass unless you ran them and read the output. Do not claim a feature is done in `ROADMAP.md` or `README.md` until it works.
 8. **Small steps.** Work in small, testable increments and commit often.
 9. **One branch per feature.** After the base setup, never build a feature directly on `main`. Branch from an up-to-date `main` as `feature/<name>` (names are listed in `ROADMAP.md`), open a pull request when tests pass, then start the next feature from `main`.
-10. **Product data.** The target dataset is Amazon Reviews 2023, sampled to about 13,000 products in 24 categories by the data pipeline. Image links point to Amazon-hosted URLs, so always render generated artwork when an image fails to load.
+10. **Product data.** The target dataset is Amazon Reviews 2023, sampled to 12,000 products in 24 categories by the data pipeline. Image links point to Amazon-hosted URLs, so always render generated artwork when an image fails to load.
 
 ## Commands (once scaffolded)
 

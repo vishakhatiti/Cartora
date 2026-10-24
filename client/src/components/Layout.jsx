@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import SearchBox from './SearchBox.jsx';
 import ThemeSwitcher from './ThemeSwitcher.jsx';
 import UserMenu from './UserMenu.jsx';
 
@@ -24,12 +25,16 @@ export default function Layout() {
         Skip to content
       </a>
       <header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold tracking-tight">
             <img src="/favicon.svg" alt="" width="28" height="28" />
             Cartora
           </Link>
-          <div className="flex items-center gap-3">
+          <NavLink to="/products" className="hidden text-sm font-semibold text-muted hover:text-fg sm:block">All products</NavLink>
+          <div className="order-last w-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-xl sm:mx-auto">
+            <SearchBox />
+          </div>
+          <div className="ml-auto flex items-center gap-3">
             <ThemeSwitcher />
             <AccountArea />
           </div>
