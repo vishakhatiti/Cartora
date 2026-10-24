@@ -2,35 +2,53 @@ import { Link } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
 import { formatCount } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
+import ProductImage from '../components/ProductImage.jsx';
 import StatusPanel from '../components/StatusPanel.jsx';
 import { ErrorNotice, ProductGrid, ProductGridSkeleton } from '../components/ProductCard.jsx';
+
+const TILT = ['-rotate-3', 'rotate-2', '-rotate-1'];
 
 export default function HomePage() {
   const cats = useRemote((signal) => catalogApi.categories(signal), []);
   const top = useRemote((signal) => catalogApi.products({ sort: 'relevance', pageSize: 8 }, signal), []);
+  const shown = top.data?.items ?? [];
 
   return (
     <div className="settle">
-      <section className="text-center">
-        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight sm:text-6xl">
-          Shop smarter. Sell from the same account.
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl text-base text-muted sm:text-lg">
-          A calmer marketplace: no sponsored clutter, no forced accounts, and one login for buying and selling.
-        </p>
-        <Link to="/products" className="mt-6 inline-block rounded-full bg-primary px-6 py-3 font-semibold text-primary-fg transition-transform hover:-translate-y-0.5">
-          Browse all products
-        </Link>
+      <section className="relative overflow-hidden rounded-3xl bg-hero px-6 py-10 text-hero-fg sm:px-12 sm:py-16">
+        <div className="pointer-events-none absolute -bottom-16 left-1/3 select-none text-[18rem] leading-none text-hero-fg/5" aria-hidden="true">✳</div>
+        <div className="relative grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-orange">One account, two ways to use it</p>
+            <h1 className="mt-3 text-5xl leading-[1.05] sm:text-6xl">Shop smarter. Sell from the same account.</h1>
+            <p className="mt-5 max-w-lg text-base text-hero-fg/85 sm:text-lg">
+              A calmer marketplace: real products, no sponsored clutter, no forced accounts, and one login for buying and selling.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/products" className="rounded-full bg-orange px-6 py-3 font-semibold text-orange-fg">Explore products</Link>
+              <Link to="/sell" className="rounded-full border border-hero-fg/40 px-6 py-3 font-semibold text-hero-fg hover:bg-hero-fg/10">Start selling</Link>
+            </div>
+          </div>
+          <ul className="hidden grid-cols-3 gap-3 lg:grid" aria-label="Featured products">
+            {shown.slice(0, 3).map((p, i) => (
+              <li key={p.id} className={TILT[i]}>
+                <Link to={`/product/${p.id}`} aria-label={p.title} className="block overflow-hidden rounded-2xl bg-white shadow-xl transition-transform hover:-translate-y-1">
+                  <ProductImage product={p} size="large" alt="" className="aspect-[3/4] w-full p-2" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section aria-labelledby="cats-h" className="mt-14">
-        <h2 id="cats-h" className="text-xl font-bold">Shop by category</h2>
+        <h2 id="cats-h" className="text-3xl">Shop by category</h2>
         {cats.status === 'error' ? null : (
-          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {(cats.data?.categories ?? Array.from({ length: 8 }, (_, i) => ({ slug: `s${i}`, skeleton: true }))).map((c) => (
               <li key={c.slug}>
-                {c.skeleton ? <div className="skeleton h-16 rounded-2xl" /> : (
-                  <Link to={`/products?category=${c.slug}`} className="flex min-h-16 flex-col justify-center rounded-2xl py-2 border border-line bg-surface px-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary">
+                {c.skeleton ? <div className="skeleton h-20 rounded-3xl" /> : (
+                  <Link to={`/products?category=${c.slug}`} className="flex min-h-20 flex-col justify-center rounded-3xl bg-peach px-5 py-3 ring-2 ring-transparent transition duration-200 hover:-translate-y-0.5 hover:ring-orange">
                     <span className="font-semibold">{c.label}</span>
                     <span className="text-xs text-muted">{formatCount(c.count)} products</span>
                   </Link>
@@ -43,17 +61,17 @@ export default function HomePage() {
 
       <section aria-labelledby="top-h" className="mt-14">
         <div className="flex items-end justify-between gap-3">
-          <h2 id="top-h" className="text-xl font-bold">Most-rated products</h2>
+          <h2 id="top-h" className="text-3xl">Most-rated products</h2>
           <Link to="/products" className="text-sm font-semibold text-primary hover:underline">See all</Link>
         </div>
-        <div className="mt-4">
+        <div className="mt-5">
           {top.status === 'error' && <ErrorNotice error={top.error} onRetry={top.retry} />}
           {top.status === 'loading' && !top.data && <ProductGridSkeleton count={4} />}
-          {top.data && <ProductGrid items={top.data.items.slice(0, 4)} />}
+          {top.data && <ProductGrid items={shown.slice(0, 4)} />}
         </div>
       </section>
 
-      <p className="mt-14 text-center text-sm text-muted">Cart, wishlist, payments and selling are being built next.</p>
+      <p className="mt-14 text-center text-sm text-muted">Cart, wishlist and payments are being built next.</p>
       <div className="mx-auto mt-4 max-w-md"><StatusPanel /></div>
     </div>
   );

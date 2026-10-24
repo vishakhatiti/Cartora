@@ -59,6 +59,11 @@ export const authApi = {
   reset: (body) => apiFetch('/auth/reset', { method: 'POST', body }),
   google: (credential) => apiFetch('/auth/google', { method: 'POST', body: { credential } }),
   logout: () => apiFetch('/auth/logout', { method: 'POST' }),
+  becomeSeller: (storeName) => apiFetch('/seller/activate', { method: 'POST', body: { storeName } }),
+};
+
+export const sellerApi = {
+  me: (signal) => apiFetch('/seller/me', { signal }),
 };
 
 /**

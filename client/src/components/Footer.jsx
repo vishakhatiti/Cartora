@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const link = 'text-sm text-primary-fg/80 underline-offset-2 hover:text-primary-fg hover:underline';
 
 /** Dark pine footer. Only links to pages that exist; no invented address, phone number or socials. */
 export default function Footer() {
+  const { user } = useAuth();
   return (
     <footer className="bg-primary-hover text-primary-fg" style={{ '--primary-fg': '#ffffff' }}>
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-8">
@@ -21,8 +23,15 @@ export default function Footer() {
         <nav aria-label="Account and project">
           <h2 className="font-sans text-xs font-bold uppercase tracking-wide text-primary-fg/70">Account</h2>
           <ul className="mt-3 space-y-2">
-            <li><Link className={link} to="/sign-in">Sign in</Link></li>
-            <li><Link className={link} to="/register">Create account</Link></li>
+            {user ? (
+              <li><Link className={link} to="/account">Your account</Link></li>
+            ) : (
+              <>
+                <li><Link className={link} to="/sign-in">Sign in</Link></li>
+                <li><Link className={link} to="/register">Create account</Link></li>
+              </>
+            )}
+            <li><Link className={link} to="/sell">Sell on Cartora</Link></li>
             <li><a className={link} href="https://github.com/vishakhatiti/Cartora">Built in the open on GitHub</a></li>
           </ul>
         </nav>

@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
+import { createSellerRouter } from './routes/seller.js';
 import { createCatalogRouter } from './routes/catalog.js';
 import { getDefaultCatalog } from './services/catalog/catalog.js';
 import { createAuthRouter } from './routes/auth.js';
@@ -50,6 +51,7 @@ export function createApp(env, { catalog, authService } = {}) {
 
   app.use('/api/health', healthRouter);
   app.use('/api/auth', createAuthRouter({ authService: auth, env, secret: env.JWT_SECRET }));
+  app.use('/api/seller', createSellerRouter({ authService: auth }));
   app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 
   app.use(notFound);

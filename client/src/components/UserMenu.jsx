@@ -41,7 +41,7 @@ export default function UserMenu() {
         aria-expanded={open}
         aria-label={`Account menu for ${user.name}`}
         onClick={() => setOpen((v) => !v)}
-        className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-primary font-semibold text-primary-fg transition-transform hover:scale-105"
+        className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-orange font-semibold text-orange-fg transition-transform hover:scale-105"
       >
         {user.avatarUrl ? (
           <img src={user.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />

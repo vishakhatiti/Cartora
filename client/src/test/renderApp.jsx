@@ -23,6 +23,7 @@ export function fakeApi(overrides = {}) {
     reset: vi.fn().mockResolvedValue({ user: asha }),
     google: vi.fn().mockResolvedValue({ user: asha }),
     logout: vi.fn().mockResolvedValue(null),
+    becomeSeller: vi.fn().mockImplementation((storeName) => Promise.resolve({ user: { ...asha, isSeller: true, storeName } })),
     ...overrides,
   };
 }
