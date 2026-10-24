@@ -1,45 +1,60 @@
+import { Link } from 'react-router-dom';
+import { catalogApi } from '../lib/catalogApi.js';
+import { formatCount } from '../lib/format.js';
+import { useRemote } from '../hooks/useRemote.js';
 import StatusPanel from '../components/StatusPanel.jsx';
-
-// Items listed here are not built yet; ROADMAP.md tracks real progress.
-const UPCOMING = [
-  { title: 'Browse 12,000 products', text: 'Search, filters and product pages with real photos. The catalog API is ready; the pages are next.' },
-  { title: 'Cart and wishlist', text: 'Saved in your browser as a guest and in your account once you sign in.' },
-  { title: 'Card payments', text: 'Checkout through Stripe, with a confirmation email.' },
-  { title: 'Buy and sell', text: 'One account with a switch between buying and selling.' },
-];
+import { ErrorNotice, ProductGrid, ProductGridSkeleton } from '../components/ProductCard.jsx';
 
 export default function HomePage() {
+  const cats = useRemote((signal) => catalogApi.categories(signal), []);
+  const top = useRemote((signal) => catalogApi.products({ sort: 'relevance', pageSize: 8 }, signal), []);
+
   return (
     <div className="settle">
       <section className="text-center">
-        <p className="mx-auto inline-block rounded-full border border-line bg-surface px-3 py-1 text-sm font-semibold text-primary">
-          Under construction
-        </p>
-        <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-extrabold leading-tight sm:text-6xl">
+        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight sm:text-6xl">
           Shop smarter. Sell from the same account.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base text-muted sm:text-lg">
-          Cartora is a marketplace built to be calmer than the big ones: no sponsored clutter, no forced accounts,
-          and one login for buying and selling.
+          A calmer marketplace: no sponsored clutter, no forced accounts, and one login for buying and selling.
         </p>
+        <Link to="/products" className="mt-6 inline-block rounded-full bg-primary px-6 py-3 font-semibold text-primary-fg transition-transform hover:-translate-y-0.5">
+          Browse all products
+        </Link>
       </section>
 
-      <div className="mt-12 grid gap-6 md:grid-cols-5">
-        <div className="md:col-span-2">
-          <StatusPanel />
-        </div>
-        <section aria-labelledby="planned-heading" className="md:col-span-3">
-          <h2 id="planned-heading" className="text-lg font-bold">Coming next</h2>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-            {UPCOMING.map((item) => (
-              <li key={item.title} className="rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-primary">
-                <h3 className="font-semibold">{item.title}</h3>
-                <p className="mt-1 text-sm text-muted">{item.text}</p>
+      <section aria-labelledby="cats-h" className="mt-14">
+        <h2 id="cats-h" className="text-xl font-bold">Shop by category</h2>
+        {cats.status === 'error' ? null : (
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {(cats.data?.categories ?? Array.from({ length: 8 }, (_, i) => ({ slug: `s${i}`, skeleton: true }))).map((c) => (
+              <li key={c.slug}>
+                {c.skeleton ? <div className="skeleton h-16 rounded-2xl" /> : (
+                  <Link to={`/products?category=${c.slug}`} className="flex h-16 flex-col justify-center rounded-2xl border border-line bg-surface px-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary">
+                    <span className="font-semibold">{c.label}</span>
+                    <span className="text-xs text-muted">{formatCount(c.count)} products</span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
-        </section>
-      </div>
+        )}
+      </section>
+
+      <section aria-labelledby="top-h" className="mt-14">
+        <div className="flex items-end justify-between gap-3">
+          <h2 id="top-h" className="text-xl font-bold">Most-rated products</h2>
+          <Link to="/products" className="text-sm font-semibold text-primary hover:underline">See all</Link>
+        </div>
+        <div className="mt-4">
+          {top.status === 'error' && <ErrorNotice error={top.error} onRetry={top.retry} />}
+          {top.status === 'loading' && !top.data && <ProductGridSkeleton count={4} />}
+          {top.data && <ProductGrid items={top.data.items.slice(0, 4)} />}
+        </div>
+      </section>
+
+      <p className="mt-14 text-center text-sm text-muted">Cart, wishlist, payments and selling are being built next.</p>
+      <div className="mx-auto mt-4 max-w-md"><StatusPanel /></div>
     </div>
   );
 }

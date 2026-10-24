@@ -137,3 +137,38 @@ h3 {
     scroll-behavior: auto !important;
   }
 }
+
+/* The price tag motif: a label with a notch and a punched hole on the left. */
+.price-tag {
+  display: inline-block;
+  position: relative;
+  padding: 0.2rem 0.6rem 0.2rem 1.2rem;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-weight: 800;
+  font-size: 0.95rem;
+  border-radius: 0.35rem 0.6rem 0.6rem 0.35rem;
+  clip-path: polygon(0.55rem 0, 100% 0, 100% 100%, 0.55rem 100%, 0 50%);
+}
+.price-tag::before {
+  content: '';
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  width: 0.28rem;
+  height: 0.28rem;
+  margin-top: -0.14rem;
+  border-radius: 9999px;
+  background: var(--surface);
+}
+.price-tag-lg {
+  font-size: 1.6rem;
+  padding: 0.3rem 0.9rem 0.3rem 1.6rem;
+  clip-path: polygon(0.8rem 0, 100% 0, 100% 100%, 0.8rem 100%, 0 50%);
+}
+.price-tag-lg::before {
+  left: 0.95rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: -0.2rem;
+}
