@@ -13,6 +13,7 @@ import SellerProductFormPage from './pages/SellerProductFormPage.jsx';
 import SellerOrdersPage from './pages/SellerOrdersPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
+import PaymentReturnPage from './pages/PaymentReturnPage.jsx';
 import DemoPaymentPage from './pages/DemoPaymentPage.jsx';
 import OrderPage from './pages/OrderPage.jsx';
 import SellerDashboardPage from './pages/SellerDashboardPage.jsx';
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="cart" element={<CartPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/pay/:id" element={<DemoPaymentPage />} />
+        <Route path="checkout/return/:id" element={<PaymentReturnPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:id" element={<OrderPage />} />
         <Route path="sell" element={<SellerDashboardPage />} />
