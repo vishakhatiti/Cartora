@@ -15,11 +15,11 @@ export default function HomePage() {
 
   return (
     <div className="settle">
-      <section className="relative overflow-hidden rounded-3xl bg-hero px-6 py-10 text-hero-fg sm:px-12 sm:py-16">
+      <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-hero to-hero-2 px-6 py-10 text-hero-fg sm:px-12 sm:py-16">
         <div className="pointer-events-none absolute -bottom-16 left-1/3 select-none text-[18rem] leading-none text-hero-fg/5" aria-hidden="true">✳</div>
         <div className="relative grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-orange">One account, two ways to use it</p>
+            <p className="text-sm font-semibold uppercase tracking-widest text-primary">One account, two ways to use it</p>
             <h1 className="mt-3 text-5xl leading-[1.05] sm:text-6xl">Shop smarter. Sell from the same account.</h1>
             <p className="mt-5 max-w-lg text-base text-hero-fg/85 sm:text-lg">
               A calmer marketplace: real products, no sponsored clutter, no forced accounts, and one login for buying and selling.

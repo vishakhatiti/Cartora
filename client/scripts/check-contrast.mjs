@@ -1,8 +1,8 @@
 // Checks WCAG contrast for every theme pair the UI relies on. Run: node scripts/check-contrast.mjs
 // Exits 1 if any pair is below its target (4.5 for text, 3 for large text and UI outlines).
 const themes = {
-  light: { bg: '#f5f9fb', cream: '#fbfdfe', surface: '#ffffff', fg: '#14262e', muted: '#4d6670', primary: '#0a7570', primaryHover: '#085e5b', primaryFg: '#ffffff', pale: '#dff3f0', accent: '#f5b335', accentFg: '#1e1606', line: '#dde8ec', hero: '#0a3340', heroFg: '#ffffff', orange: '#cc4309', orangeFg: '#ffffff', peach: '#ffe9d9', bad: '#c0281d', ok: '#167a42', warn: '#a15c07', info: '#1d6fb8' },
-  dark : { bg: '#0d171b', cream: '#101d22', surface: '#14232a', fg: '#eaf4f6', muted: '#9fb6bd', primary: '#4fd1c5', primaryHover: '#7ee3d9', primaryFg: '#05201d', pale: '#1a3038', accent: '#f5b335', accentFg: '#1e1606', line: '#23373f', hero: '#071013', heroFg: '#eaf4f6', orange: '#ff7a3d', orangeFg: '#1d0c04', peach: '#2e2119', bad: '#ff8f84', ok: '#52d68a', warn: '#f0b050', info: '#6cb8f0' },
+  light: { bg: '#fbf9ff', cream: '#ffffff', surface: '#ffffff', fg: '#1f2340', muted: '#555a7c', primary: '#5b3fd6', primaryHover: '#4a31b8', primaryFg: '#ffffff', pale: '#eee9ff', accent: '#ffd166', accentFg: '#2a2000', line: '#e8e4f5', hero: '#e6defc', hero2: '#d3f1ea', heroFg: '#1f2340', orange: '#cf3c26', orangeFg: '#ffffff', peach: '#ffe5dc', bad: '#c0281d', ok: '#167a42', warn: '#8f5405', info: '#1d6fb8' },
+  dark : { bg: '#12101f', cream: '#171428', surface: '#1c1930', fg: '#f1eeff', muted: '#b3aed3', primary: '#b9a6ff', primaryHover: '#cfc2ff', primaryFg: '#1a1236', pale: '#2a2548', accent: '#ffd166', accentFg: '#2a2000', line: '#2e2a4c', hero: '#1e1a3d', hero2: '#143a40', heroFg: '#f1eeff', orange: '#ff8c6b', orangeFg: '#2a0f08', peach: '#3a2530', bad: '#ff9a90', ok: '#5fe0a0', warn: '#f5c060', info: '#7cc2f5' },
 };
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -15,7 +15,7 @@ const pairs = [
   ['primaryFg', 'primary', 4.5], ['accentFg', 'accent', 4.5], ['primary', 'bg', 4.5], ['primary', 'surface', 4.5],
   ['bad', 'surface', 4.5], ['ok', 'surface', 4.5], ['warn', 'surface', 4.5], ['info', 'surface', 4.5],
   ['heroFg', 'hero', 4.5], ['orangeFg', 'orange', 4.5], ['fg', 'peach', 4.5], ['muted', 'peach', 4.5],
-  ['fg', 'cream', 4.5], ['muted', 'cream', 4.5], ['fg', 'pale', 4.5], ['primary', 'pale', 4.5], ['primaryFg', 'primaryHover', 4.5], ['line', 'bg', 1.1],
+  ['heroFg', 'hero2', 4.5], ['primary', 'hero', 4.5], ['primary', 'hero2', 4.5], ['fg', 'cream', 4.5], ['muted', 'cream', 4.5], ['fg', 'pale', 4.5], ['primary', 'pale', 4.5], ['primaryFg', 'primaryHover', 4.5], ['line', 'bg', 1.1],
 ];
 let failed = false;
 for (const [name, t] of Object.entries(themes)) {

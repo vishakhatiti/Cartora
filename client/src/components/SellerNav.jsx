@@ -14,7 +14,7 @@ export default function SellerNav({ pill }) {
       <ul className="flex gap-1 overflow-x-auto">
         {SELLER_LINKS.map((l) => (
           <li key={l.to}>
-            <NavLink to={l.to} end={l.end} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>{l.label}</NavLink>
+            <NavLink to={l.to} end={l.end} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-primary text-primary-fg shadow-sm' : ''}`}>{l.label}</NavLink>
           </li>
         ))}
       </ul>

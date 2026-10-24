@@ -69,8 +69,8 @@ function SecondRow() {
         ) : (
           <nav aria-label="Categories" className="min-w-0 flex-1">
             <ul className="flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {SHELVES.map((sh) => <li key={sh.slug}><NavLink to={`/${sh.slug}`} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>{sh.short}</NavLink></li>)}
-              <li><NavLink to="/products" end className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>All products</NavLink></li>
+              {SHELVES.map((sh) => <li key={sh.slug}><NavLink to={`/${sh.slug}`} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-primary text-primary-fg shadow-sm' : ''}`}>{sh.short}</NavLink></li>)}
+              <li><NavLink to="/products" end className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-primary text-primary-fg shadow-sm' : ''}`}>All products</NavLink></li>
               {items.slice(0, 10).map((c) => (
                 <li key={c.slug}><Link to={`/products?category=${c.slug}`} className={pill}>{c.label}</Link></li>
               ))}
@@ -92,7 +92,7 @@ export default function Layout() {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">
         Skip to content
       </a>
-      <header className="sticky top-0 z-30 bg-hero text-hero-fg">
+      <header className="sticky top-0 z-30 border-b border-hero-fg/10 bg-hero/90 text-hero-fg shadow-sm backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-8 md:flex-nowrap">
           <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen} className="grid h-10 w-10 place-items-center rounded-lg hover:bg-hero-fg/10">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -109,6 +109,7 @@ export default function Layout() {
           </div>
         </div>
         <SecondRow />
+        <div aria-hidden="true" className="h-0.5 bg-linear-to-r from-primary via-coral to-accent" />
       </header>
 
       <NavDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
