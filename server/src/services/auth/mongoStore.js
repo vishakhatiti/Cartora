@@ -13,6 +13,8 @@ const toUser = (doc) =>
     tokenVersion: doc.tokenVersion ?? 0,
     lastLoginAt: doc.lastLoginAt ?? null,
     purgeAt: doc.purgeAt ?? null,
+    googleId: doc.googleId ?? null,
+    avatarUrl: doc.avatarUrl ?? null,
   };
 
 const toOtp = (doc) =>
@@ -39,8 +41,18 @@ export function createMongoStore() {
       if (!isValidId(id)) return null;
       return toUser(await User.findById(id).select('+passwordHash').lean());
     },
-    async createUser({ email, name, passwordHash = null, emailVerified = false, purgeAt = null }) {
-      const doc = await User.create({ email, name, passwordHash: passwordHash ?? undefined, emailVerified, purgeAt: purgeAt ?? undefined });
+    async findUserByGoogleId(googleId) {
+      return toUser(await User.findOne({ googleId: String(googleId) }).select('+passwordHash').lean());
+    },
+    async createUser({ email, name, passwordHash = null, emailVerified = false, purgeAt = null, googleId = null, avatarUrl = null }) {
+      // Absent optional fields are left out, because the sparse unique index on googleId ignores missing values only.
+      const doc = await User.create({
+        email, name, emailVerified,
+        ...(passwordHash && { passwordHash }),
+        ...(purgeAt && { purgeAt }),
+        ...(googleId && { googleId: String(googleId) }),
+        ...(avatarUrl && { avatarUrl }),
+      });
       return toUser(doc.toObject());
     },
     async updateUser(id, { set = {}, unset = [], incTokenVersion = false } = {}) {

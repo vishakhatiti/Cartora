@@ -93,6 +93,7 @@ About 11% of products have no reviews. Photos are loaded from Amazon's servers, 
 | `POST /api/auth/resend-verification` | Sends a new verification code. |
 | `POST /api/auth/login` | Email and password. Unverified accounts get 403 `EMAIL_NOT_VERIFIED`. |
 | `POST /api/auth/login-code/request` and `/verify` | Sign in with an emailed code instead of a password. |
+| `POST /api/auth/google` | Sign in with a Google ID token (`credential`). Verified against `GOOGLE_CLIENT_ID`. Creates a verified account, or links the existing one with the same email. |
 | `POST /api/auth/forgot` and `/reset` | Emails a reset code, then sets a new password and signs out every older session. |
 | `POST /api/auth/logout`, `GET /api/auth/me` | Clears the cookie; returns the signed-in user. |
 
@@ -104,7 +105,9 @@ About 11% of products have no reviews. Photos are loaded from Amazon's servers, 
 | Limits per IP | 20 credential attempts and 10 code requests per 15 minutes on `/api/auth` |
 | Email | Gmail API with an OAuth2 refresh token. In development without Google keys, codes are printed in the server console. In production without them, the API refuses to send. |
 
-**Not built yet:** Google sign-in and guest mode (`feature/auth-google-guest`). Only logins covered by the automated tests are claimed to work; real Gmail delivery has not been tried.
+**Guest mode** needs no server state: guests browse and keep a cart in the browser, and the cart is merged on sign-in (cart feature). **Not tried against real services:** Gmail delivery and Google sign-in are covered by automated tests with fakes only; the sign-in page is part of the client work, so there is no button yet.
+
+**Google sign-in setup:** on the same OAuth client, add `https://shop-with-cartora.vercel.app` under *Authorized JavaScript origins*. The Vercel variable `VITE_GOOGLE_CLIENT_ID` (same client ID) is used by the sign-in button later. If an account was registered with a password but never verified, linking Google removes that password, so nobody can take over an email address they do not own.
 
 ## MongoDB Atlas free tier (512 MB)
 

@@ -17,6 +17,7 @@ const schemas = {
   verify: z.object({ email, code }),
   login: z.object({ email, password: z.string().min(1).max(128) }),
   reset: z.object({ email, code, newPassword: password }),
+  google: z.object({ credential: z.string().min(20).max(5000) }),
 };
 
 const limiter = (limit, message) =>
@@ -70,6 +71,10 @@ export function createAuthRouter({ authService, env, secret }) {
 
   router.post('/login-code/verify', credentialLimit, handler(async (req, res) => {
     startSession(res, await authService.verifyLoginCode(schemas.verify.parse(req.body)));
+  }));
+
+  router.post('/google', credentialLimit, handler(async (req, res) => {
+    startSession(res, await authService.googleSignIn(schemas.google.parse(req.body)));
   }));
 
   router.post('/forgot', codeRequestLimit, handler(async (req, res) => {

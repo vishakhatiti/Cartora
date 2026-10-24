@@ -57,6 +57,18 @@ describe.each(targets)('auth store contract: $name', ({ make }) => {
     expect(await store.updateUser('0'.repeat(24), { set: { name: 'x' } })).toBeNull();
   });
 
+  it('stores and finds Google ids, and leaves them empty for password accounts', async () => {
+    const g = await store.createUser({ email: 'g@x.com', name: 'G', emailVerified: true, googleId: 'sub-1', avatarUrl: 'https://x/a.jpg' });
+    const p1 = await store.createUser({ email: 'p1@x.com', name: 'P1', passwordHash: 'h' });
+    const p2 = await store.createUser({ email: 'p2@x.com', name: 'P2', passwordHash: 'h' }); // two users with no googleId must be allowed
+    expect(g).toMatchObject({ googleId: 'sub-1', avatarUrl: 'https://x/a.jpg' });
+    expect((await store.findUserByGoogleId('sub-1')).id).toBe(g.id);
+    expect(await store.findUserByGoogleId('nope')).toBeNull();
+    expect([p1.googleId, p2.googleId]).toEqual([null, null]);
+    const cleared = await store.updateUser(p1.id, { set: { passwordHash: null } });
+    expect(cleared.passwordHash).toBeNull();
+  });
+
   const future = () => new Date(Date.now() + 10 * 60 * 1000);
 
   it('keeps one code per email and purpose', async () => {
@@ -99,6 +111,14 @@ describe.each(targets)('auth store contract: $name', ({ make }) => {
 });
 
 describe.skipIf(!MONGO_TEST_URL)('MongoDB-only guarantees', () => {
+  it('rejects two users with the same Google id', async () => {
+    await Promise.all([User.deleteMany({}), Otp.deleteMany({})]);
+    const store = createMongoStore();
+    await store.createUser({ email: 'a@x.com', name: 'A', googleId: 'dup', emailVerified: true });
+    const err = await store.createUser({ email: 'b@x.com', name: 'B', googleId: 'dup', emailVerified: true }).catch((e) => e);
+    expect(err.code).toBe(11000);
+  });
+
   it('has a TTL index on otps.expiresAt and users.purgeAt, and a unique index on users.email', async () => {
     const otpIndexes = await Otp.collection.indexes();
     const userIndexes = await User.collection.indexes();

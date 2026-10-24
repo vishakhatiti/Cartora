@@ -14,7 +14,7 @@ const GENERIC_BAD_CODE = 'That code is incorrect or has expired. Request a new o
  * Email enumeration: requests that send a code answer the same way whether or not the account exists,
  * and a wrong password and an unknown email give the same error.
  */
-export function createAuthService({ store, mailer, hasher, secret, now = () => new Date() }) {
+export function createAuthService({ store, mailer, hasher, secret, googleVerifier = null, now = () => new Date() }) {
   // Built on first use so the app still starts in development without JWT_SECRET (auth routes then answer 503).
   let otpHasher;
   const otp = {
@@ -31,7 +31,7 @@ export function createAuthService({ store, mailer, hasher, secret, now = () => n
 
   const publicUser = (u) => ({
     id: u.id, email: u.email, name: u.name, emailVerified: u.emailVerified,
-    isSeller: u.isSeller, storeName: u.storeName,
+    isSeller: u.isSeller, storeName: u.storeName, avatarUrl: u.avatarUrl ?? null,
   });
 
   /**
@@ -127,6 +127,52 @@ export function createAuthService({ store, mailer, hasher, secret, now = () => n
       const user = await store.findUserByEmail(email);
       if (!user?.emailVerified) throw new AppError(400, GENERIC_BAD_CODE, 'OTP_INVALID');
       return markLoggedIn(user);
+    },
+
+    /**
+     * Signs in with a Google ID token. Google proves the person controls the mailbox, so:
+     *  - a known Google id signs straight in;
+     *  - an existing account with the same email is linked;
+     *  - if that account was never verified, any password on it was set by whoever registered first, so it is
+     *    removed and old sessions are revoked (this stops "pre-registration" account takeover);
+     *  - otherwise a new verified account without a password is created.
+     */
+    async googleSignIn({ credential }) {
+      if (!googleVerifier) throw new AppError(503, 'Google sign-in is not configured on the server.', 'GOOGLE_NOT_CONFIGURED');
+      const profile = await googleVerifier.verify(credential);
+      if (!profile.emailVerified) {
+        throw new AppError(401, 'Your Google email address is not verified.', 'GOOGLE_EMAIL_UNVERIFIED');
+      }
+
+      const bySub = await store.findUserByGoogleId(profile.sub);
+      if (bySub) return markLoggedIn(bySub);
+
+      const byEmail = await store.findUserByEmail(profile.email);
+      if (byEmail) {
+        if (byEmail.googleId && byEmail.googleId !== profile.sub) {
+          throw new AppError(409, 'This email is already linked to a different Google account.', 'GOOGLE_CONFLICT');
+        }
+        const wasUnverified = !byEmail.emailVerified;
+        return store.updateUser(byEmail.id, {
+          set: {
+            googleId: profile.sub, emailVerified: true, lastLoginAt: now(),
+            ...(profile.picture && !byEmail.avatarUrl && { avatarUrl: profile.picture }),
+            ...(wasUnverified && { passwordHash: null }),
+          },
+          unset: ['purgeAt'],
+          incTokenVersion: wasUnverified,
+        });
+      }
+
+      const name = (profile.name || profile.email.split('@')[0]).slice(0, 80);
+      try {
+        return await store.createUser({
+          email: profile.email, name, emailVerified: true, googleId: profile.sub, avatarUrl: profile.picture,
+        });
+      } catch (err) {
+        if (err.code !== 'DUPLICATE' && err.code !== 11000) throw err;
+        return markLoggedIn((await store.findUserByGoogleId(profile.sub)) ?? (await store.findUserByEmail(profile.email)));
+      }
     },
 
     async forgotPassword({ email }) {
