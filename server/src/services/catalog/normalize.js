@@ -121,6 +121,6 @@ function toDetails(value) {
 /** Listing shape: no embedded reviews, features, or internal search-index fields. */
 export function toSummary(product) {
   // eslint-disable-next-line no-unused-vars
-  const { reviews, features, description, details, categoryPath, titleLower, titleWords, haystack, ...summary } = product;
+  const { reviews, features, description, details, categoryPath, titleLower, titleWords, haystack, sellerId, ...summary } = product;
   return { ...summary, reviewCount: reviews.length };
 }

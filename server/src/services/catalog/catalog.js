@@ -155,7 +155,7 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
   function getDetail(id) {
     const product = byId.get(id);
     if (!product) return null;
-    const { titleLower, titleWords, haystack, reviews, ...detail } = product;
+    const { titleLower, titleWords, haystack, reviews, sellerId, ...detail } = product; // the seller's account id stays server-side
     return { ...detail, reviewCount: reviews.length, ratingBreakdown: breakdown(reviews) };
   }
 

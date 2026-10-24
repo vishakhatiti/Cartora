@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { createMemoryCommerceStore } from '../../src/services/commerce/memoryStore.js';
 import { createMongoCommerceStore } from '../../src/services/commerce/mongoStore.js';
-import { Cart, CheckoutSession, Order, Product, Wishlist, AddressBook, SupportTicket } from '../../src/models/index.js';
+import { Cart, CheckoutSession, Order, Product, Notification, Wishlist, AddressBook, SupportTicket } from '../../src/models/index.js';
 
 // Same behaviour tests for the in-memory store (always) and real MongoDB (when MONGO_TEST_URL is set, as in CI).
 const MONGO_TEST_URL = process.env.MONGO_TEST_URL;
@@ -10,7 +10,7 @@ const targets = [
   { name: 'memory store', make: async () => createMemoryCommerceStore(), newUserId: () => `user-${Math.random()}` },
   ...(MONGO_TEST_URL ? [{
     name: 'MongoDB store',
-    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({}), Wishlist.deleteMany({}), AddressBook.deleteMany({}), SupportTicket.deleteMany({}), Product.deleteMany({})]); return createMongoCommerceStore(); },
+    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({}), Wishlist.deleteMany({}), AddressBook.deleteMany({}), SupportTicket.deleteMany({}), Product.deleteMany({}), Notification.deleteMany({})]); return createMongoCommerceStore(); },
     newUserId: () => String(new mongoose.Types.ObjectId()),
   }] : []),
 ];
@@ -18,7 +18,7 @@ const targets = [
 beforeAll(async () => {
   if (MONGO_TEST_URL) {
     await mongoose.connect(MONGO_TEST_URL, { serverSelectionTimeoutMS: 15000 });
-    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init(), Wishlist.init(), AddressBook.init(), SupportTicket.init(), Product.init()]);
+    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init(), Wishlist.init(), AddressBook.init(), SupportTicket.init(), Product.init(), Notification.init()]);
   }
 });
 afterAll(async () => { if (MONGO_TEST_URL) await mongoose.disconnect(); });
@@ -42,6 +42,17 @@ describe.each(targets)('commerce store contract: $name', ({ make, newUserId }) =
   const listingData = (sellerId, id = 'SAAAAAAAAA', over = {}) => ({
     id, sellerId, storeName: 'Asha Crafts', title: 'Mug', brand: 'Asha', category: { slug: 'crafts', label: 'Crafts' }, priceCents: 2450,
     description: 'A mug.', features: ['Dishwasher safe'], images: [{ thumb: 'https://i.example.com/a.jpg', large: 'https://i.example.com/a.jpg' }], stockQty: 5, ...over,
+  });
+
+  it('stores notifications per user, newest first, and marks them read', async () => {
+    await store.createNotification({ userId, type: 'order_paid', title: 'Order confirmed', message: 'Order CRT-AAAAAAAA is confirmed.', link: '/orders/1' });
+    await store.createNotification({ userId, type: 'order_status', title: 'Items shipped', message: 'Shipped.', link: '/orders/1' });
+    await store.createNotification({ userId: newUserId(), type: 'new_order', title: 'Other', message: 'Not yours.', link: '/sell/orders' });
+    expect((await store.listNotifications(userId)).map((n) => n.title)).toEqual(['Items shipped', 'Order confirmed']);
+    expect(await store.countUnreadNotifications(userId)).toBe(2);
+    await store.markNotificationsRead(userId);
+    expect(await store.countUnreadNotifications(userId)).toBe(0);
+    expect((await store.listNotifications(userId)).every((n) => n.readAt)).toBe(true);
   });
 
   it('stores seller listings, lets only the owner change them and lists active ones', async () => {

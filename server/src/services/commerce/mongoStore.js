@@ -6,6 +6,7 @@ import { Product } from '../../models/Product.js';
 import { Wishlist } from '../../models/Wishlist.js';
 import { AddressBook } from '../../models/AddressBook.js';
 import { SupportTicket } from '../../models/SupportTicket.js';
+import { Notification } from '../../models/Notification.js';
 
 const isValidId = (id) => mongoose.isValidObjectId(id) && String(new mongoose.Types.ObjectId(String(id))) === String(id);
 
@@ -25,7 +26,7 @@ const toListing = (doc) =>
 
 const toSession = (doc) =>
   doc && {
-    id: String(doc._id), userId: String(doc.userId), provider: doc.provider, status: doc.status,
+    id: String(doc._id), userId: String(doc.userId), buyerEmail: doc.buyerEmail ?? null, provider: doc.provider, status: doc.status,
     items: doc.items.map(toItem),
     subtotalCents: doc.subtotalCents, shippingCents: doc.shippingCents, totalCents: doc.totalCents, currency: doc.currency,
     shippingAddress: doc.shippingAddress ?? null, failureReason: doc.failureReason ?? null, orderId: doc.orderId ?? null, createdAt: doc.createdAt,
@@ -45,6 +46,12 @@ const toTicket = (doc) =>
   doc && {
     id: String(doc._id), ticketNumber: doc.ticketNumber, userId: doc.userId ? String(doc.userId) : null, name: doc.name, email: doc.email,
     topic: doc.topic, orderNumber: doc.orderNumber ?? null, message: doc.message, status: doc.status, createdAt: doc.createdAt,
+  };
+
+const toNotification = (doc) =>
+  doc && {
+    id: String(doc._id), userId: String(doc.userId), type: doc.type, title: doc.title, message: doc.message,
+    link: doc.link ?? null, readAt: doc.readAt ?? null, createdAt: doc.createdAt,
   };
 
 /** MongoDB-backed commerce store. Stores ids and quantities for carts, and snapshots for sessions and orders. */
@@ -154,6 +161,22 @@ export function createMongoCommerceStore() {
       if (order.items.every((i) => i.fulfilment === 'shipped') && order.status === 'paid') { order.status = 'shipped'; order.timeline.push({ status: 'shipped', at }); }
       await order.save();
       return toOrder(order.toObject());
+    },
+
+    async createNotification(data) {
+      return toNotification((await Notification.create(data)).toObject());
+    },
+    async listNotifications(userId) {
+      if (!isValidId(userId)) return [];
+      return (await Notification.find({ userId }).sort({ createdAt: -1, _id: -1 }).limit(30).lean()).map(toNotification);
+    },
+    async countUnreadNotifications(userId) {
+      if (!isValidId(userId)) return 0;
+      return Notification.countDocuments({ userId, readAt: { $exists: false } });
+    },
+    async markNotificationsRead(userId) {
+      if (!isValidId(userId)) return;
+      await Notification.updateMany({ userId, readAt: { $exists: false } }, { $set: { readAt: new Date() } });
     },
 
     async createSession(data) {

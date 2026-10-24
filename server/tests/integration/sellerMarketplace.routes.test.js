@@ -54,7 +54,8 @@ describe('listings', () => {
     expect(found.body.items.map((p) => p.id)).toContain(id);
     const detail = await request(app).get(`/api/products/${id}`);
     expect(detail.body.product).toMatchObject({ storeName: 'Asha Crafts', stockQty: 3, finalPriceCents: 2450 });
-    expect(detail.body.product).not.toHaveProperty('sellerId'.replace('sellerId', 'passwordHash'));
+    expect(detail.body.product).not.toHaveProperty('sellerId'); // internal account ids are never published
+    expect(JSON.stringify(found.body)).not.toContain('sellerId');
     const shelf = await request(app).get('/api/discover/new-releases');
     expect(shelf.body.items[0].id).toBe(id);
   });

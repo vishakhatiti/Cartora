@@ -11,6 +11,8 @@ const checkoutSessionSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     provider: { type: String, enum: ['demo', 'stripe'], required: true },
     status: { type: String, enum: CHECKOUT_STATUSES, default: 'pending', index: true },
+    // Copied from the signed-in account when checkout starts, so the confirmation email can be sent after payment.
+    buyerEmail: { type: String, trim: true, lowercase: true, maxlength: 254 },
     items: [
       {
         _id: false,

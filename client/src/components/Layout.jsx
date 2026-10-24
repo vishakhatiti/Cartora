@@ -8,6 +8,7 @@ import { SHELVES } from '../lib/shelves.js';
 import ModeSwitch from './ModeSwitch.jsx';
 import Footer from './Footer.jsx';
 import NavDrawer from './NavDrawer.jsx';
+import SellerNav from './SellerNav.jsx';
 import SearchBox from './SearchBox.jsx';
 import ThemeSwitcher from './ThemeSwitcher.jsx';
 import UserMenu from './UserMenu.jsx';
@@ -55,7 +56,10 @@ function SecondRow() {
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 sm:px-8">
         <ModeSwitch />
         {selling ? (
-          <p className="truncate text-sm text-hero-fg/85">Seller workspace{user?.storeName ? ` · ${user.storeName}` : ''}</p>
+          <>
+            <p className="hidden shrink-0 truncate text-sm text-hero-fg/85 lg:block">Seller workspace{user?.storeName ? ` · ${user.storeName}` : ''}</p>
+            <SellerNav pill={pill} />
+          </>
         ) : (
           <nav aria-label="Categories" className="min-w-0 flex-1">
             <ul className="flex gap-1 overflow-x-auto">

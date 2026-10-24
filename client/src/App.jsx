@@ -8,6 +8,9 @@ import WishlistPage from './pages/WishlistPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 import AddressesPage from './pages/AddressesPage.jsx';
 import HelpPage from './pages/HelpPage.jsx';
+import SellerProductsPage from './pages/SellerProductsPage.jsx';
+import SellerProductFormPage from './pages/SellerProductFormPage.jsx';
+import SellerOrdersPage from './pages/SellerOrdersPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import DemoPaymentPage from './pages/DemoPaymentPage.jsx';
@@ -38,6 +41,10 @@ export default function App() {
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:id" element={<OrderPage />} />
         <Route path="sell" element={<SellerDashboardPage />} />
+        <Route path="sell/products" element={<SellerProductsPage />} />
+        <Route path="sell/products/new" element={<SellerProductFormPage />} />
+        <Route path="sell/products/:id" element={<SellerProductFormPage />} />
+        <Route path="sell/orders" element={<SellerOrdersPage />} />
         <Route path="sell/start" element={<SellerStartPage />} />
         <Route path="sign-in" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />

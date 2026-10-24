@@ -64,6 +64,12 @@ export const authApi = {
 
 export const sellerApi = {
   me: (signal) => apiFetch('/seller/me', { signal }),
+  summary: (signal) => apiFetch('/seller/summary', { signal }),
+  products: (signal) => apiFetch('/seller/products', { signal }),
+  createProduct: (data) => apiFetch('/seller/products', { method: 'POST', body: data }),
+  updateProduct: (id, data) => apiFetch(`/seller/products/${encodeURIComponent(id)}`, { method: 'PUT', body: data }),
+  orders: (signal) => apiFetch('/seller/orders', { signal }),
+  ship: (orderId) => apiFetch(`/seller/orders/${encodeURIComponent(orderId)}/ship`, { method: 'POST' }),
 };
 
 const toBody = (items) => ({ items: items.map(({ productId, qty }) => ({ productId, qty })) });

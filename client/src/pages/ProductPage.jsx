@@ -35,6 +35,7 @@ function Gallery({ product }) {
 }
 
 function AddToCart({ product }) {
+  const outOfStock = product.stockQty != null && product.stockQty < 1;
   const cart = useCart();
   const toast = useToast();
   const [qty, setQty] = useState(1);
@@ -53,9 +54,9 @@ function AddToCart({ product }) {
   };
   return (
     <div className="mt-5 flex flex-wrap items-center gap-4">
-      <QtyStepper value={qty} onChange={setQty} disabled={busy} label="Quantity to add" />
-      <button type="button" onClick={add} disabled={busy} className="rounded-full bg-orange px-7 py-3 font-semibold text-orange-fg disabled:opacity-60">
-        {busy ? 'Adding…' : 'Add to cart'}
+      {!outOfStock && <QtyStepper value={qty} onChange={setQty} disabled={busy} label="Quantity to add" max={Math.min(10, product.stockQty ?? 10)} />}
+      <button type="button" onClick={add} disabled={busy || outOfStock} className="rounded-full bg-orange px-7 py-3 font-semibold text-orange-fg disabled:opacity-60">
+        {outOfStock ? 'Out of stock' : busy ? 'Adding…' : 'Add to cart'}
       </button>
       <WishlistButton productId={product.id} title={product.title} label className="border border-line-strong" />
     </div>
@@ -171,6 +172,7 @@ export default function ProductPage() {
           <h1 className="mt-1 text-2xl font-extrabold leading-snug sm:text-3xl">{p.title}</h1>
           <div className="mt-3"><Stars value={p.ratingAvg} count={p.ratingCount} /></div>
           <div className="mt-5"><PriceTag product={p} large /></div>
+          {p.storeName && <p className="mt-2 text-sm">Sold by <strong>{p.storeName}</strong>{p.stockQty != null && (p.stockQty < 1 ? <span className="ml-2 font-semibold text-bad">Out of stock</span> : p.stockQty <= 5 ? <span className="ml-2 font-semibold text-warn">Only {p.stockQty} left</span> : <span className="ml-2 text-muted">In stock</span>)}</p>}
           <p className="mt-2 text-sm text-muted">Price in US dollars. Shipping is free on orders of $50.00 or more, otherwise $5.99.</p>
           <AddToCart product={p} />
           {p.features.length > 0 && (

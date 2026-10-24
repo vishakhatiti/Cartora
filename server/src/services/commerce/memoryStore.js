@@ -10,6 +10,7 @@ export function createMemoryCommerceStore() {
   const addressBooks = new Map(); // userId -> [address]
   const tickets = [];
   const listings = new Map();
+  const notifications = [];
   let seq = 0; // breaks ties between records created in the same millisecond, newest first
   const newestFirst = (a, b) => (b.createdAt - a.createdAt) || (b.seq - a.seq);
   const publicCopy = ({ seq: _seq, ...rest }) => clone(rest);
@@ -95,6 +96,21 @@ export function createMemoryCommerceStore() {
       for (const item of order.items) if (item.sellerId === sellerId && item.fulfilment !== 'shipped') { item.fulfilment = 'shipped'; item.shippedAt = at; }
       if (order.items.every((i) => i.fulfilment === 'shipped') && order.status === 'paid') { order.status = 'shipped'; order.timeline.push({ status: 'shipped', at }); }
       return clone(order);
+    },
+
+    async createNotification(data) {
+      const n = { ...clone(data), id: randomUUID(), readAt: null, createdAt: new Date(), seq: (seq += 1) };
+      notifications.push(n);
+      return publicCopy(n);
+    },
+    async listNotifications(userId) {
+      return notifications.filter((n) => n.userId === userId).sort(newestFirst).slice(0, 30).map(publicCopy);
+    },
+    async countUnreadNotifications(userId) {
+      return notifications.filter((n) => n.userId === userId && !n.readAt).length;
+    },
+    async markNotificationsRead(userId) {
+      for (const n of notifications) if (n.userId === userId && !n.readAt) n.readAt = new Date();
     },
 
     async createSession(data) {

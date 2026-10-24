@@ -29,7 +29,7 @@ const sellerOrderView = (order, sellerId) => {
 };
 
 /** Seller workspace: listings (kept in step with the live catalogue), orders for their items, and summary figures. */
-export function createSellerService({ store, getCatalog, now = () => new Date() }) {
+export function createSellerService({ store, getCatalog, onShipped = async () => {}, now = () => new Date() }) {
   const categoryOf = (slug) => {
     const category = getCatalog().categories.find((c) => c.slug === slug);
     if (!category) throw new AppError(400, 'Choose one of the listed categories.', 'VALIDATION_ERROR');
@@ -84,8 +84,11 @@ export function createSellerService({ store, getCatalog, now = () => new Date() 
     },
 
     async ship(user, orderId) {
+      const before = (await store.listOrdersForSeller(user.id)).find((o) => o.id === orderId);
+      const alreadyShipped = Boolean(before) && before.items.filter((i) => i.sellerId === user.id).every((i) => i.fulfilment === 'shipped');
       const order = await store.markSellerItemsShipped(orderId, user.id, now());
       if (!order) throw new AppError(404, 'Order not found.', 'NOT_FOUND');
+      if (!alreadyShipped) await onShipped(order, { buyerId: order.userId, storeName: user.storeName }); // repeating the request does not notify twice
       return sellerOrderView(order, user.id);
     },
 

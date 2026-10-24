@@ -26,7 +26,7 @@ export const orderView = (o) => ({
  * completeSession() is the single place that creates orders. The demo "simulate" route calls it today and the
  * verified Stripe webhook will call it later, so the rules (idempotency, cart handling) do not change.
  */
-export function createCheckoutService({ store, carts, provider, getCatalog, onStockChanged = () => {}, now = () => new Date() }) {
+export function createCheckoutService({ store, carts, provider, getCatalog, onStockChanged = () => {}, onOrderPaid = async () => {}, now = () => new Date() }) {
   const ownSession = async (userId, id) => {
     const session = await store.findSession(id);
     if (!session || session.userId !== userId) throw new AppError(404, 'Checkout not found.', 'NOT_FOUND');
@@ -45,6 +45,7 @@ export function createCheckoutService({ store, carts, provider, getCatalog, onSt
       }
       const session = await store.createSession({
         userId: user.id,
+        buyerEmail: user.email,
         provider: provider.name,
         items: priced.lines.map(({ productId, title, brand, image, unitPriceCents, qty, sellerId, storeName }) => ({ productId, title, brand, image, unitPriceCents, qty, sellerId, storeName })),
         ...priced.totals,
@@ -100,6 +101,7 @@ export function createCheckoutService({ store, carts, provider, getCatalog, onSt
         await store.attachOrderToSession(sessionId, order.id);
         await carts.removePurchased(session.userId, session.items);
         onStockChanged(await store.consumeStock(session.items)); // seller listings only; never goes below zero
+        await onOrderPaid(orderView(order), { userId: session.userId, email: session.buyerEmail, sellerIds: [...new Set(session.items.map((i) => i.sellerId).filter(Boolean))] });
       }
       return { session: sessionView(await store.findSession(sessionId), provider), order: orderView(order) };
     },
