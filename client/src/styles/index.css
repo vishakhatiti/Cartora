@@ -6,67 +6,67 @@
   Design tokens. Themes are sets of colour tokens chosen with data-theme on <html>. Components use the token
   classes (bg-surface, text-muted, ...) and never hard-code colours, so a theme is one more block here.
   scripts/check-contrast.mjs verifies the contrast of every pair below.
-  Ivory is the default and follows the Cartora palette; Night is its dark counterpart.
+  Ivory (the default light theme) is a fresh teal, coral and sunshine palette; Night is its dark counterpart.
 */
 :root,
 [data-theme='light'] {
-  --bg: #f7f5ef; /* Warm Ivory */
-  --cream: #fcfaf5; /* Soft Cream: header, inputs */
+  --bg: #f5f9fb; /* Cool white */
+  --cream: #fbfdfe; /* Header, inputs */
   --surface: #ffffff;
-  --fg: #242923;
-  --muted: #666b64; /* Secondary text. The lighter #858980 fails AA for small text, so it is not used for text. */
-  --primary: #214e3d; /* Forest Green */
-  --primary-hover: #173a2d; /* Deep Pine */
+  --fg: #14262e;
+  --muted: #4d6670; /* Secondary text. The lighter #858980 fails AA for small text, so it is not used for text. */
+  --primary: #0a7570; /* Teal */
+  --primary-hover: #085e5b; /* Deep teal */
   --primary-fg: #ffffff;
-  --pale: #e6ede6; /* Pale Sage: secondary hover, selected filters */
-  --sage: #78977e;
-  --accent: #c6a66b; /* Soft Gold: rating stars, restrained highlights */
-  --accent-fg: #242923;
-  --line: #e5e2d9;
-  --line-strong: #d5d1c6;
-  --ok: #237547;
-  --warn: #9a6415;
-  --bad: #b42318;
-  --info: #286a91;
-  --hero: #173a2d; /* Deep Pine: header and page bands */
+  --pale: #dff3f0; /* Pale mint: secondary hover, selected filters */
+  --sage: #5fb3a9;
+  --accent: #f5b335; /* Sunshine: rating stars, highlights */
+  --accent-fg: #1e1606;
+  --line: #dde8ec;
+  --line-strong: #c9d9df;
+  --ok: #167a42;
+  --warn: #a15c07;
+  --bad: #c0281d;
+  --info: #1d6fb8;
+  --hero: #0a3340; /* Deep teal: header and page bands */
   --hero-fg: #ffffff;
-  --orange: #c4550b; /* active pills, pagination, key calls to action */
+  --orange: #cc4309; /* active pills, pagination, key calls to action */
   --orange-fg: #ffffff;
-  --peach: #fcebdc;
-  --coral: #d98270;
-  --blue: #dce8f0;
-  --lavender: #e9e1f1;
-  --butter: #f4e8bd;
+  --peach: #ffe9d9;
+  --coral: #f0806a;
+  --blue: #dbeeff;
+  --lavender: #ece4ff;
+  --butter: #fff0b3;
 }
 
 [data-theme='dark'] {
-  --bg: #121a16;
-  --cream: #16201b;
-  --surface: #1a2520;
-  --fg: #eef2ec;
-  --muted: #a9b5ab;
-  --primary: #8fb095;
-  --primary-hover: #a8c6ad;
-  --primary-fg: #0f1a14;
-  --pale: #24332b;
-  --sage: #78977e;
-  --accent: #c6a66b;
-  --accent-fg: #1d1a10;
-  --line: #2c3b33;
-  --line-strong: #3a4c42;
-  --ok: #5fc58a;
-  --warn: #e0a64f;
+  --bg: #0d171b;
+  --cream: #101d22;
+  --surface: #14232a;
+  --fg: #eaf4f6;
+  --muted: #9fb6bd;
+  --primary: #4fd1c5;
+  --primary-hover: #7ee3d9;
+  --primary-fg: #05201d;
+  --pale: #1a3038;
+  --sage: #5fb3a9;
+  --accent: #f5b335;
+  --accent-fg: #1e1606;
+  --line: #23373f;
+  --line-strong: #2f4852;
+  --ok: #52d68a;
+  --warn: #f0b050;
   --bad: #ff8f84;
-  --info: #6fb3dc;
-  --hero: #0c1410;
-  --hero-fg: #eef2ec;
-  --orange: #e8803a;
-  --orange-fg: #1d1006;
-  --peach: #2c231d;
-  --coral: #d98270;
-  --blue: #1f3340;
-  --lavender: #30283c;
-  --butter: #3d3a22;
+  --info: #6cb8f0;
+  --hero: #071013;
+  --hero-fg: #eaf4f6;
+  --orange: #ff7a3d;
+  --orange-fg: #1d0c04;
+  --peach: #2e2119;
+  --coral: #f0806a;
+  --blue: #17303f;
+  --lavender: #2a2540;
+  --butter: #3a3519;
 }
 
 @theme inline {
