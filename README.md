@@ -164,6 +164,22 @@ Built so far: the page shell, three themes, toast messages, the sign-in, registe
 
 Not checked yet: the pages against the live API, and real Google or Gmail delivery. The automated tests use a fake API.
 
+## Buyer and seller API (feature/buyer-experience)
+
+| Route | Access | Purpose |
+|---|---|---|
+| `GET /api/discover/:kind` | Public | `trending`, `best-sellers`, `new-releases`. Returns `basis`, the plain-language ranking rule. |
+| `GET/PUT/DELETE /api/wishlist...` | Signed in | List, add (`PUT /items/:productId`), remove. No guest wishlist. |
+| `/api/addresses` | Signed in | List, create, update, set default, delete saved addresses. |
+| `POST /api/support/tickets`, `GET /api/support/tickets` | Create: anyone (rate limited). List: signed in | Customer service requests. |
+| `GET /api/notifications`, `POST /api/notifications/read` | Signed in | Notification bell. |
+| `GET /api/seller/summary`, `GET/POST /api/seller/products`, `PUT /api/seller/products/:id` | Sellers only | Dashboard figures, own listings, create, edit, stock. |
+| `GET /api/seller/orders`, `POST /api/seller/orders/:id/ship` | Sellers only | Own order items; mark shipped. The order is "shipped" once every item is shipped. |
+
+**Behaviour:** seller listings are stored in MongoDB and loaded into the in-memory catalogue at start-up. Stock is checked when the cart changes and when checkout starts, and is deducted only when payment succeeds. Product detail responses use `must-revalidate` so price and stock are not stale.
+
+**Known limitations:** two buyers can race for the last unit (no stock reservation); no order cancellation, returns or tracking numbers; wishlist needs an account; the Mongo store contract tests run in CI only; order email delivery through Gmail has not been tried live; the live site has not been re-checked since this feature.
+
 ## Environment variables
 
 Real values are never committed. Copy the example files and fill them in.
