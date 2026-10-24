@@ -138,15 +138,26 @@ export function createMongoCommerceStore() {
       return (await Product.find({ sellerId: { $ne: null }, isActive: true }).lean()).map(toListing);
     },
     /** Subtract purchased quantities from seller listings (never below zero) and return the changed listings. Dataset products have no tracked stock. */
-    async consumeStock(items) {
-      const ids = [];
+    /**
+     * All-or-nothing stock take. Each decrement is one atomic conditional update (stock >= qty), so two buyers can never
+     * both get the last unit. If any listing is short, the ones already taken are put back and nothing is sold.
+     */
+    async takeStock(items) {
+      const taken = [];
+      let soldOut = null;
       for (const item of items) {
         if (!item.sellerId || !isValidId(item.sellerId)) continue;
-        // One atomic update that clamps at zero. (Two separate steps would zero the stock right after a normal sale.)
-        await Product.updateOne({ asin: item.productId, sellerId: item.sellerId }, [{ $set: { stock: { $max: [0, { $subtract: ['$stock', item.qty] }] } } }], { updatePipeline: true });
-        ids.push(item.productId);
+        const res = await Product.updateOne({ asin: item.productId, sellerId: item.sellerId, stock: { $gte: item.qty } }, { $inc: { stock: -item.qty } });
+        if (res.modifiedCount === 1) { taken.push(item); continue; }
+        // Not modified: either the listing is short, or it is not a seller listing at all (then it is simply ignored).
+        if (await Product.exists({ asin: item.productId, sellerId: item.sellerId })) { soldOut = item.productId; break; }
       }
-      return ids.length ? (await Product.find({ asin: { $in: ids } }).lean()).map(toListing) : [];
+      if (soldOut) {
+        for (const item of taken) await Product.updateOne({ asin: item.productId, sellerId: item.sellerId }, { $inc: { stock: item.qty } });
+        return { ok: false, soldOut: [soldOut], changed: [] };
+      }
+      const ids = taken.map((i) => i.productId);
+      return { ok: true, soldOut: [], changed: ids.length ? (await Product.find({ asin: { $in: ids } }).lean()).map(toListing) : [] };
     },
 
     async listOrdersForSeller(sellerId) {

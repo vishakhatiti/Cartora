@@ -70,12 +70,19 @@ describe.each(targets)('commerce store contract: $name', ({ make, newUserId }) =
     expect(await store.listListingsForSeller(newUserId())).toEqual([]);
   });
 
-  it('takes stock for sold listing items, never below zero, and ignores marketplace items', async () => {
+  it('takes stock all or nothing, ignores marketplace items, and never sells the last unit twice', async () => {
     await store.createListing(listingData(userId, 'SCCCCCCCCC', { stockQty: 3 }));
-    const changed = await store.consumeStock([{ productId: 'SCCCCCCCCC', sellerId: userId, qty: 2 }, { productId: 'A4', sellerId: null, qty: 5 }]);
-    expect(changed.map((l) => [l.id, l.stockQty])).toEqual([['SCCCCCCCCC', 1]]);
-    const again = await store.consumeStock([{ productId: 'SCCCCCCCCC', sellerId: userId, qty: 5 }]);
-    expect(again[0].stockQty).toBe(0);
+    const taken = await store.takeStock([{ productId: 'SCCCCCCCCC', sellerId: userId, qty: 2 }, { productId: 'A4', sellerId: null, qty: 5 }]);
+    expect(taken.ok).toBe(true);
+    expect(taken.changed.map((l) => [l.id, l.stockQty])).toEqual([['SCCCCCCCCC', 1]]);
+    await store.createListing(listingData(userId, 'SDDDDDDDDD', { stockQty: 5 }));
+    const short = await store.takeStock([{ productId: 'SDDDDDDDDD', sellerId: userId, qty: 2 }, { productId: 'SCCCCCCCCC', sellerId: userId, qty: 5 }]);
+    expect(short).toMatchObject({ ok: false, soldOut: ['SCCCCCCCCC'] });
+    expect((await store.findListing('SDDDDDDDDD')).stockQty).toBe(5); // the first item was put back
+    expect((await store.findListing('SCCCCCCCCC')).stockQty).toBe(1);
+    const [a, b] = await Promise.all([1, 2].map(() => store.takeStock([{ productId: 'SCCCCCCCCC', sellerId: userId, qty: 1 }])));
+    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1); // exactly one buyer gets the last unit
+    expect((await store.findListing('SCCCCCCCCC')).stockQty).toBe(0);
   });
 
   it('finds orders by seller and marks only that seller\'s items shipped', async () => {

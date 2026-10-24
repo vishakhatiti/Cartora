@@ -75,7 +75,19 @@ export function createCheckoutService({ store, carts, provider, getCatalog, onSt
 
       if (outcome !== 'succeeded') throw new AppError(400, 'Unknown payment outcome.', 'VALIDATION_ERROR');
       if (session.status === 'failed') throw new AppError(409, 'This payment attempt already failed. Start a new checkout.', 'SESSION_FAILED');
-      // Claim the session first. If this runs twice, or crashes half way, running it again finishes the job.
+      // Take the stock first, all or nothing. If someone else bought the last unit while this buyer was paying,
+      // nothing is sold: the session fails with a clear reason and no order exists. (With a real payment provider this
+      // is the point where a refund would be issued; the demo provider moves no money.)
+      let stockTaken = null;
+      if (session.status === 'pending') {
+        stockTaken = await store.takeStock(session.items);
+        if (!stockTaken.ok) {
+          await store.transitionSession(sessionId, 'pending', { status: 'failed', failureReason: 'An item sold out while you were paying. You were not charged.' });
+          return { session: sessionView(await store.findSession(sessionId), provider), order: null };
+        }
+        onStockChanged(stockTaken.changed);
+      }
+      // Claim the session. If this runs twice, or crashes half way, running it again finishes the job.
       if (session.status === 'pending') {
         const claimed = await store.transitionSession(sessionId, 'pending', { status: 'succeeded' });
         if (!claimed && (await store.findSession(sessionId)).status === 'failed') {
@@ -100,7 +112,6 @@ export function createCheckoutService({ store, carts, provider, getCatalog, onSt
       if (created) {
         await store.attachOrderToSession(sessionId, order.id);
         await carts.removePurchased(session.userId, session.items);
-        onStockChanged(await store.consumeStock(session.items)); // seller listings only; never goes below zero
         await onOrderPaid(orderView(order), { userId: session.userId, email: session.buyerEmail, sellerIds: [...new Set(session.items.map((i) => i.sellerId).filter(Boolean))] });
       }
       return { session: sessionView(await store.findSession(sessionId), provider), order: orderView(order) };

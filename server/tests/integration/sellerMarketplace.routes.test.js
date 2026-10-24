@@ -130,6 +130,27 @@ describe('selling, stock and fulfilment', () => {
     expect((await request(app).get(`/api/products/${id}`)).body.product.stockQty).toBe(1);
   });
 
+  it('sells the last unit to only one of two buyers who both started checkout', async () => {
+    const { app, h, category } = setup();
+    const s = await seller(app, h, 's@example.com');
+    const id = (await s.post('/api/seller/products').send(product(category, { stockQty: 1 }))).body.product.id;
+    const open = async (email) => {
+      const b = await signIn(app, h, email);
+      await b.put(`/api/cart/items/${id}`).send({ qty: 1 }).expect(200);
+      return { b, session: (await b.post('/api/checkout/sessions').send({ address }).expect(201)).body.session };
+    };
+    const first = await open('one@example.com');
+    const second = await open('two@example.com');
+    const win = await first.b.post(`/api/checkout/sessions/${first.session.id}/simulate`).send({ outcome: 'success' }).expect(200);
+    expect(win.body.order).toBeTruthy();
+    const lose = await second.b.post(`/api/checkout/sessions/${second.session.id}/simulate`).send({ outcome: 'success' }).expect(200);
+    expect(lose.body.order).toBeNull();
+    expect(lose.body.session).toMatchObject({ status: 'failed' });
+    expect(lose.body.session.failureReason).toMatch(/sold out/i);
+    expect((await second.b.get('/api/orders').expect(200)).body.orders).toHaveLength(0);
+    expect((await request(app).get(`/api/products/${id}`)).body.product.stockQty).toBe(0);
+  });
+
   it('treats a sold-out listing as unavailable', async () => {
     const { app, h, category } = setup();
     const s = await seller(app, h, 's@example.com');
