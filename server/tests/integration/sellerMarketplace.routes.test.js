@@ -183,3 +183,12 @@ describe('selling, stock and fulfilment', () => {
     expect(seen.items.find((i) => i.productId === mine).fulfilment).toBe('shipped');
   });
 });
+
+describe('caching', () => {
+  it('makes browsers revalidate product pages so price and stock are never stale', async () => {
+    const { app } = setup();
+    const res = await request(app).get('/api/products/A4');
+    expect(res.headers['cache-control']).toMatch(/must-revalidate/);
+    expect(res.headers['cache-control']).toMatch(/max-age=0/);
+  });
+});

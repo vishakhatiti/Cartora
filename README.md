@@ -27,9 +27,11 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 - Guest mode, register with email verification, password login, emailed login codes, forgot-password codes, Google sign-in
 - Product browsing with search, category and price filters, deals, sorting and pagination
 - Product pages with reviews; signed-in users can add reviews
-- Buyer / Seller switch: sellers add products from a dashboard
-- Cart, wishlist, Stripe Checkout payments, order history
-- Emails through the Gmail API (OTP codes, login alerts, order confirmations)
+- One account, two modes: a Buying / Selling switch in the header
+- Buying: Trending, Best sellers and New releases shelves (ranked from real review dates and counts, each with a "basis" line), cart, wishlist, saved addresses, order list and tracking, customer service form, notification bell
+- Selling: dashboard, product list, add and edit product, stock, orders to ship (sellers see only their own items and the ship-to address, never the buyer's email)
+- Demo checkout (labelled "Demo Mode — No Real Money Charged"); Stripe Checkout once test keys exist
+- Emails through the Gmail API (OTP codes, login alerts, order confirmations; order emails are best effort)
 - Responsive layout with animations, hover effects, toast messages and skeleton loaders
 
 ## Tech stack

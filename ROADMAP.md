@@ -35,12 +35,13 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/storefront-ui` | Home, search with suggestions, filters, sort, pagination (URL state), product page with gallery, specs, rating breakdown, reviews and related products. **Built; tested with a fake API and checked in a browser against the real catalogue locally; not yet checked on the live site.** | 2 |
 | `feature/reviews` | Review list and add review, rating updates | 2 |
 | `feature/seller-mode` | Buyer/Seller switch, seller activation, seller-only API and dashboard shell, reference-inspired restyle. **Built; server 208 and client 78 tests pass; switch and activation checked in a browser locally. Adding products, stock and seller orders are not built yet.** | 2 |
-| `feature/cart-wishlist` | Wishlist with guest merge (the cart itself shipped in `feature/demo-payments`) | 3 |
+| `feature/cart-wishlist` | Wishlist (signed-in only, built in `feature/buyer-experience`). Guest merge not built. | 3 |
 | `feature/demo-payments` | Cart, checkout with a labelled demo payment provider (simulate success or failure), orders created only after success, confirmation page. **Built; server 243 and client 102 tests pass; full flow checked in a browser locally; not yet checked on the live site. No order emails, order list page or saved addresses yet. Wishlist is not part of this branch.** | 3 |
 | `feature/stripe-checkout` | Stripe Checkout and verified, idempotent webhook (replaces the demo provider when test keys exist) | 3 |
-| `feature/orders-notifications` | Orders, order email, notification bell | 3 |
+| `feature/orders-notifications` | Orders list and tracking, notification bell, best-effort order email. **Built in `feature/buyer-experience`; Gmail delivery not tried live.** | 3 |
 | `feature/client-shell-themes` | React app shell, routing, three themes, toasts, sign-in/register/forgot pages. **Built; tested with a fake API, not yet against the live API.** | 0-4 |
 | `feature/design-system` | Forest-green tokens, DM Serif Display and Inter, two-row header with category search, slide-out menu, footer, dialogs. **Built; 68 client tests pass; checked in a browser locally; not yet checked on the live site.** | 1 |
+| `feature/buyer-experience` | Shelves (trending, best sellers, new releases), wishlist, orders, addresses, customer service, seller dashboard, products, stock and orders, notifications. **Server 289 and client 128 tests pass; both modes checked in a browser locally; not checked on the live site.** | 2-3 |
 | `feature/ui-polish` | Animations, toasts, modals, skeletons, responsive pass | 4 |
 | `feature/deployment` | Render and Vercel configuration, smoke test | 5 |
 
@@ -90,7 +91,7 @@ Prices are stored as integer cents. The server recomputes all totals from the da
 | Products | `GET /api/products` (q, category, minPrice, maxPrice, rating, deals, sort, page), `GET /api/products/:id`, `GET /api/products/suggest`, `POST /api/products` (seller) |
 | Reviews | `GET /api/products/:id/reviews`, `POST /api/products/:id/reviews` |
 | Cart | `POST /api/cart/quote` (public), `GET /api/cart`, `PUT/DELETE /api/cart/items/:productId`, `POST /api/cart/merge`, `DELETE /api/cart` |
-| Wishlist | `GET/PUT /api/wishlist` (not built) |
+| Wishlist | `GET /api/wishlist`, `PUT/DELETE /api/wishlist/items/:productId` |
 | Checkout | `GET /api/checkout/config`, `POST /api/checkout/sessions`, `GET /api/checkout/sessions/:id`, `POST /api/checkout/sessions/:id/simulate` (demo provider only). `POST /api/webhooks/stripe` is not built |
 | Orders | `GET /api/orders`, `GET /api/orders/:id` |
 | Account | `POST /api/account/become-seller`, `GET /api/notifications`, `POST /api/notifications/read` |
