@@ -74,17 +74,21 @@ export function createMemoryCommerceStore() {
     async listActiveListings() {
       return [...listings.values()].filter((l) => l.isActive).map(publicCopy);
     },
-    /** Returns the listings whose stock changed, so the shop can be updated to match. */
-    async consumeStock(items) {
+    /**
+     * All-or-nothing: takes stock for every seller listing in `items`, or takes nothing and reports which ones are short.
+     * Marketplace items (no seller) have no stock count and are ignored. Returns { ok, soldOut, changed }.
+     */
+    async takeStock(items) {
+      const own = items.filter((i) => i.sellerId && listings.get(i.productId)?.sellerId === i.sellerId);
+      const soldOut = own.filter((i) => listings.get(i.productId).stockQty < i.qty).map((i) => i.productId);
+      if (soldOut.length) return { ok: false, soldOut, changed: [] };
       const changed = new Map();
-      for (const item of items) {
-        const listing = item.sellerId ? listings.get(item.productId) : null;
-        if (listing && listing.sellerId === item.sellerId) {
-          listing.stockQty = Math.max(0, listing.stockQty - item.qty);
-          changed.set(listing.id, publicCopy(listing));
-        }
+      for (const i of own) {
+        const listing = listings.get(i.productId);
+        listing.stockQty -= i.qty;
+        changed.set(listing.id, publicCopy(listing));
       }
-      return [...changed.values()];
+      return { ok: true, soldOut: [], changed: [...changed.values()] };
     },
 
     async listOrdersForSeller(sellerId) {

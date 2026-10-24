@@ -42,6 +42,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/client-shell-themes` | React app shell, routing, three themes, toasts, sign-in/register/forgot pages. **Built; tested with a fake API, not yet against the live API.** | 0-4 |
 | `feature/design-system` | Forest-green tokens, DM Serif Display and Inter, two-row header with category search, slide-out menu, footer, dialogs. **Built; 68 client tests pass; checked in a browser locally; not yet checked on the live site.** | 1 |
 | `feature/buyer-experience` | Shelves (trending, best sellers, new releases), wishlist, orders, addresses, customer service, seller dashboard, products, stock and orders, notifications. **Server 289 and client 128 tests pass; both modes checked in a browser locally; not checked on the live site.** | 2-3 |
+| `feature/hardening` | Atomic all-or-nothing stock take at payment (no overselling). Still to do: browser end-to-end test, accessibility pass, order cancellation. **Stock part: server 289 tests pass; Mongo contract test runs in CI.** | 4 |
 | `feature/ui-polish` | Animations, toasts, modals, skeletons, responsive pass | 4 |
 | `feature/deployment` | Render and Vercel configuration, smoke test | 5 |
 
