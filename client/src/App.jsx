@@ -3,6 +3,10 @@ import Layout from './components/Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductsPage from './pages/ProductsPage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
+import CartPage from './pages/CartPage.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import DemoPaymentPage from './pages/DemoPaymentPage.jsx';
+import OrderPage from './pages/OrderPage.jsx';
 import SellerDashboardPage from './pages/SellerDashboardPage.jsx';
 import SellerStartPage from './pages/SellerStartPage.jsx';
 import SignInPage from './pages/SignInPage.jsx';
@@ -18,6 +22,10 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="product/:id" element={<ProductPage />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="checkout/pay/:id" element={<DemoPaymentPage />} />
+        <Route path="orders/:id" element={<OrderPage />} />
         <Route path="sell" element={<SellerDashboardPage />} />
         <Route path="sell/start" element={<SellerStartPage />} />
         <Route path="sign-in" element={<SignInPage />} />
