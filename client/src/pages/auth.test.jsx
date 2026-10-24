@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp, fakeApi, asha } from '../test/renderApp.jsx';
 import { ApiError } from '../lib/api.js';
@@ -7,6 +7,7 @@ import { ApiError } from '../lib/api.js';
 // selector: 'input' because the active tab panel is also labelled "Password" (aria-labelledby).
 const field = (label) => screen.getByLabelText(label, { selector: 'input' });
 const type = (label, text) => userEvent.type(field(label), text);
+const header = () => within(screen.getByRole('banner'));
 const signedInApi = (extra = {}) => fakeApi({ me: vi.fn().mockResolvedValue({ user: asha }), ...extra });
 
 beforeEach(() => {
@@ -16,11 +17,11 @@ beforeEach(() => {
 describe('header account area', () => {
   it('offers Sign in to guests and the account menu to signed-in users', async () => {
     const { unmount } = renderApp();
-    expect(await screen.findByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in');
+    expect(await header().findByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in');
     unmount();
     renderApp({ api: signedInApi() });
     expect(await screen.findByRole('button', { name: /account menu for asha kulkarni/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Sign in' })).not.toBeInTheDocument();
+    expect(header().queryByRole('link', { name: 'Sign in' })).not.toBeInTheDocument();
   });
 
   it('signs out from the menu and confirms with a message', async () => {
@@ -29,7 +30,7 @@ describe('header account area', () => {
     expect(screen.getByRole('menuitem', { name: 'Your account' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
     expect(api.logout).toHaveBeenCalled();
-    expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    expect(await header().findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
     expect(await screen.findByText('You are signed out.')).toBeInTheDocument();
   });
 

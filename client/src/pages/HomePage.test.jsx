@@ -8,7 +8,7 @@ describe('home page', () => {
     stubCatalogFetch();
     renderApp();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Shop smarter.');
-    const cats = await screen.findByRole('link', { name: /Electronics/ });
+    const cats = await within(screen.getByRole('main')).findByRole('link', { name: /Electronics/ });
     expect(cats).toHaveAttribute('href', '/products?category=electronics');
     expect(await screen.findByRole('link', { name: /Noise-cancelling Headphones/ })).toHaveAttribute('href', '/product/B0TEST0001');
     expect(await screen.findByText('API online · Database connected')).toBeInTheDocument();

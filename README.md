@@ -18,7 +18,7 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 | Search | Full-site search | Instant suggestions, filters saved in the URL so links can be shared |
 | Order updates | Order tracking and notifications | Order timeline, email confirmation and in-app notification bell |
 | Cart and wishlist | Cart and lists | Cart and wishlist kept in the browser for guests, saved to your account and merged at login |
-| Themes | One theme | Cream, Espresso and Sage themes |
+| Themes | One theme | Ivory and Night themes |
 | Product catalog | Hundreds of millions of items | 12,500 seeded products plus anything sellers add |
 | Logistics, returns, Prime | Yes | Out of scope |
 
@@ -129,8 +129,9 @@ Built so far: the page shell, three themes, toast messages, the sign-in, registe
 
 | Part | Detail |
 |---|---|
-| Themes | Cream (default: warm paper and terracotta), Espresso (warm dark) and Sage (soft green), chosen with the three swatches in the header and remembered in the browser. All colours are tokens in `client/src/styles/index.css`; `node client/scripts/check-contrast.mjs` checks every text and background pair against WCAG AA. |
-| Type | Bricolage Grotesque for headings and Figtree for text, both bundled with the app (no request to Google Fonts). |
+| Themes | Ivory (default: warm ivory, forest green, soft gold) and Night (dark green), chosen with the two swatches in the header and remembered in the browser. The palette follows the build specification. All colours are tokens in `client/src/styles/index.css`; `node client/scripts/check-contrast.mjs` checks every text and background pair against WCAG AA. The lighter secondary grey `#858980` from the palette is not used for text because it fails AA on ivory; `#666B64` is used instead. |
+| Type | DM Serif Display for headings and Inter for text, both bundled with the app (no request to Google Fonts). |
+| Shell | Two-row header (menu, logo, category search, theme, account; then real category shortcuts), a slide-out menu with focus trap, Escape and backdrop close, a dark pine footer, and shared dialog and confirm components. Cart, wishlist and orders links are added when those pages exist. |
 | Sign-in page | Password or emailed code, Google button, links to create an account, reset a password, or continue as guest. |
 | Guest | "Continue as guest" goes to the store. Nothing needs an account yet, and there is no server session for guests. |
 | Google button | Shown only when `VITE_GOOGLE_CLIENT_ID` is set on Vercel, so there is never a dead button. |

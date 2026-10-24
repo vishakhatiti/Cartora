@@ -39,6 +39,7 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/stripe-checkout` | Stripe Checkout and webhook | 3 |
 | `feature/orders-notifications` | Orders, order email, notification bell | 3 |
 | `feature/client-shell-themes` | React app shell, routing, three themes, toasts, sign-in/register/forgot pages. **Built; tested with a fake API, not yet against the live API.** | 0-4 |
+| `feature/design-system` | Forest-green tokens, DM Serif Display and Inter, two-row header with category search, slide-out menu, footer, dialogs. **Built; 68 client tests pass; checked in a browser locally; not yet checked on the live site.** | 1 |
 | `feature/ui-polish` | Animations, toasts, modals, skeletons, responsive pass | 4 |
 | `feature/deployment` | Render and Vercel configuration, smoke test | 5 |
 

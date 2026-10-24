@@ -1,9 +1,8 @@
 // Checks WCAG contrast for every theme pair the UI relies on. Run: node scripts/check-contrast.mjs
 // Exits 1 if any pair is below its target (4.5 for text, 3 for large text and UI outlines).
 const themes = {
-  light: { bg: '#f7f0e6', surface: '#fffaf3', fg: '#2b1d16', muted: '#6b5648', primary: '#a84a22', primaryFg: '#fffaf3', accent: '#e0a458', accentFg: '#2b1d00', line: '#e3d5c3', bad: '#b42318', ok: '#2f7a4d' },
-  dark:  { bg: '#1d1511', surface: '#281d17', fg: '#f3e8dc', muted: '#bfa994', primary: '#e07a4f', primaryFg: '#2a0f06', accent: '#e8b86a', accentFg: '#2b1d00', line: '#4a382d', bad: '#ff9a8a', ok: '#7ac596' },
-  sage:  { bg: '#eef1e6', surface: '#fbfcf6', fg: '#1f2a1d', muted: '#55634f', primary: '#3f6b3a', primaryFg: '#ffffff', accent: '#d9a441', accentFg: '#2b1d00', line: '#d3dbc4', bad: '#b42318', ok: '#2e7d4f' },
+  light: { bg: '#f7f5ef', cream: '#fcfaf5', surface: '#ffffff', fg: '#242923', muted: '#666b64', primary: '#214e3d', primaryHover: '#173a2d', primaryFg: '#ffffff', pale: '#e6ede6', accent: '#c6a66b', accentFg: '#242923', line: '#e5e2d9', bad: '#b42318', ok: '#237547', warn: '#9a6415', info: '#286a91' },
+  dark:  { bg: '#121a16', cream: '#16201b', surface: '#1a2520', fg: '#eef2ec', muted: '#a9b5ab', primary: '#8fb095', primaryHover: '#a8c6ad', primaryFg: '#0f1a14', pale: '#24332b', accent: '#c6a66b', accentFg: '#1d1a10', line: '#2c3b33', bad: '#ff8f84', ok: '#5fc58a', warn: '#e0a64f', info: '#6fb3dc' },
 };
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -14,7 +13,8 @@ const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
 const pairs = [
   ['fg', 'bg', 4.5], ['fg', 'surface', 4.5], ['muted', 'bg', 4.5], ['muted', 'surface', 4.5],
   ['primaryFg', 'primary', 4.5], ['accentFg', 'accent', 4.5], ['primary', 'bg', 4.5], ['primary', 'surface', 4.5],
-  ['bad', 'surface', 4.5], ['ok', 'surface', 4.5], ['line', 'bg', 1.1],
+  ['bad', 'surface', 4.5], ['ok', 'surface', 4.5], ['warn', 'surface', 4.5], ['info', 'surface', 4.5],
+  ['fg', 'cream', 4.5], ['muted', 'cream', 4.5], ['fg', 'pale', 4.5], ['primary', 'pale', 4.5], ['primaryFg', 'primaryHover', 4.5], ['line', 'bg', 1.1],
 ];
 let failed = false;
 for (const [name, t] of Object.entries(themes)) {

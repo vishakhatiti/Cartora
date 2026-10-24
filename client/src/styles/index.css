@@ -1,72 +1,92 @@
-@import '@fontsource-variable/figtree';
-@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/inter';
+@import '@fontsource/dm-serif-display';
 @import 'tailwindcss';
 
 /*
-  Themes are sets of colour tokens chosen with data-theme on <html>. Components use the token classes
-  (bg-surface, text-muted, ...) and never hard-code colours, so a new theme is one more block here.
+  Design tokens. Themes are sets of colour tokens chosen with data-theme on <html>. Components use the token
+  classes (bg-surface, text-muted, ...) and never hard-code colours, so a theme is one more block here.
   scripts/check-contrast.mjs verifies the contrast of every pair below.
+  Ivory is the default and follows the Cartora palette; Night is its dark counterpart.
 */
-/* Cream (default): warm paper background, terracotta actions. */
 :root,
 [data-theme='light'] {
-  --bg: #f7f0e6;
-  --surface: #fffaf3;
-  --fg: #2b1d16;
-  --muted: #6b5648;
-  --primary: #a84a22;
-  --primary-fg: #fffaf3;
-  --accent: #e0a458;
-  --accent-fg: #2b1d00;
-  --line: #e3d5c3;
-  --ok: #2f7a4d;
-  --bad: #b42318;
-}
-
-/* Espresso: warm dark. */
-[data-theme='dark'] {
-  --bg: #1d1511;
-  --surface: #281d17;
-  --fg: #f3e8dc;
-  --muted: #bfa994;
-  --primary: #e07a4f;
-  --primary-fg: #2a0f06;
-  --accent: #e8b86a;
-  --accent-fg: #2b1d00;
-  --line: #4a382d;
-  --ok: #7ac596;
-  --bad: #ff9a8a;
-}
-
-/* Sage: soft green light theme. */
-[data-theme='sage'] {
-  --bg: #eef1e6;
-  --surface: #fbfcf6;
-  --fg: #1f2a1d;
-  --muted: #55634f;
-  --primary: #3f6b3a;
+  --bg: #f7f5ef; /* Warm Ivory */
+  --cream: #fcfaf5; /* Soft Cream: header, inputs */
+  --surface: #ffffff;
+  --fg: #242923;
+  --muted: #666b64; /* Secondary text. The lighter #858980 fails AA for small text, so it is not used for text. */
+  --primary: #214e3d; /* Forest Green */
+  --primary-hover: #173a2d; /* Deep Pine */
   --primary-fg: #ffffff;
-  --accent: #d9a441;
-  --accent-fg: #2b1d00;
-  --line: #d3dbc4;
-  --ok: #2e7d4f;
+  --pale: #e6ede6; /* Pale Sage: secondary hover, selected filters */
+  --sage: #78977e;
+  --accent: #c6a66b; /* Soft Gold: rating stars, restrained highlights */
+  --accent-fg: #242923;
+  --line: #e5e2d9;
+  --line-strong: #d5d1c6;
+  --ok: #237547;
+  --warn: #9a6415;
   --bad: #b42318;
+  --info: #286a91;
+  --peach: #f2d4c3;
+  --coral: #d98270;
+  --blue: #dce8f0;
+  --lavender: #e9e1f1;
+  --butter: #f4e8bd;
+}
+
+[data-theme='dark'] {
+  --bg: #121a16;
+  --cream: #16201b;
+  --surface: #1a2520;
+  --fg: #eef2ec;
+  --muted: #a9b5ab;
+  --primary: #8fb095;
+  --primary-hover: #a8c6ad;
+  --primary-fg: #0f1a14;
+  --pale: #24332b;
+  --sage: #78977e;
+  --accent: #c6a66b;
+  --accent-fg: #1d1a10;
+  --line: #2c3b33;
+  --line-strong: #3a4c42;
+  --ok: #5fc58a;
+  --warn: #e0a64f;
+  --bad: #ff8f84;
+  --info: #6fb3dc;
+  --peach: #4a3a30;
+  --coral: #d98270;
+  --blue: #1f3340;
+  --lavender: #30283c;
+  --butter: #3d3a22;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-cream: var(--cream);
   --color-surface: var(--surface);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
+  --color-pale: var(--pale);
+  --color-sage: var(--sage);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-ok: var(--ok);
+  --color-warn: var(--warn);
   --color-bad: var(--bad);
-  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-info: var(--info);
+  --color-peach: var(--peach);
+  --color-coral: var(--coral);
+  --color-blue: var(--blue);
+  --color-lavender: var(--lavender);
+  --color-butter: var(--butter);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
 }
 
 html {
@@ -83,15 +103,28 @@ body {
   font-family: var(--font-sans);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-display);
-  letter-spacing: -0.015em;
-  text-wrap: balance;
+/* DM Serif Display has one weight, so bold is never synthesised. Utilities (font-sans) can still override. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-synthesis-weight: none;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+}
+
+/* Primary buttons and links darken to Deep Pine on hover. */
+:is(button, a).bg-primary {
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+:is(button, a).bg-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
 }
 
 :focus-visible {
@@ -171,4 +204,15 @@ h3 {
   width: 0.4rem;
   height: 0.4rem;
   margin-top: -0.2rem;
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.drawer-in {
+  animation: drawer-in 0.2s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer-in { animation: none; }
 }
