@@ -8,7 +8,8 @@ const cartSchema = new mongoose.Schema(
     items: [
       {
         _id: false,
-        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        // The catalogue id (an Amazon-style string such as B0B53DWRVW). Only ids and quantities are stored.
+        productId: { type: String, required: true, trim: true, maxlength: 40 },
         qty: { type: Number, required: true, min: 1, max: MAX_QTY_PER_ITEM, validate: Number.isInteger },
       },
     ],

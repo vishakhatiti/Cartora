@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
 import { useRemote } from '../hooks/useRemote.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useCart } from '../context/CartContext.jsx';
 import ModeSwitch from './ModeSwitch.jsx';
 import Footer from './Footer.jsx';
 import NavDrawer from './NavDrawer.jsx';
@@ -18,6 +19,16 @@ function AccountArea() {
     <NavLink to="/sign-in" className="rounded-full bg-orange px-4 py-2 text-sm font-semibold text-orange-fg">
       Sign in
     </NavLink>
+  );
+}
+
+function CartLink() {
+  const { itemCount } = useCart();
+  return (
+    <Link to="/cart" aria-label={itemCount > 0 ? `Cart, ${itemCount} item${itemCount === 1 ? '' : 's'}` : 'Cart'} className="relative grid h-10 w-10 place-items-center rounded-lg hover:bg-hero-fg/10">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 8H6" /><circle cx="9" cy="20" r="1.2" /><circle cx="17" cy="20" r="1.2" /></svg>
+      {itemCount > 0 && <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-orange px-1 text-xs font-bold text-orange-fg">{itemCount > 99 ? '99+' : itemCount}</span>}
+    </Link>
   );
 }
 
@@ -80,6 +91,7 @@ export default function Layout() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <ThemeSwitcher />
+            <CartLink />
             <AccountArea />
           </div>
         </div>

@@ -21,7 +21,7 @@ Cartora is a MERN e-commerce marketplace. Read `ROADMAP.md` for scope, phases an
 1. **Secrets.** Never ask for, read, print or commit real secret values. Use only the key names in `server/.env.example` and `client/.env.example`. Add any new key to the matching example file with an empty value. If a secret is ever exposed, tell the user to rotate it.
 2. **Server is the authority.** Validate all input on the server. Recompute prices, shipping and permissions from the database. Never trust client-sent prices or roles.
 3. **Money** is integer cents. Shipping is free at a $50.00 subtotal or more, otherwise $5.99.
-4. **Stripe.** Mark orders paid only from the verified webhook, and make it idempotent on the Checkout session id.
+4. **Stripe.** Mark orders paid only from the verified webhook, and make it idempotent on the Checkout session id. Until Stripe keys exist, the only exception is the demo provider (`PAYMENT_PROVIDER=demo`): its orders are labelled "Demo Mode — No Real Money Charged", never described as Stripe payments, and go through the same single `completeSession()` step.
 5. **Auth.** JWT in an httpOnly cookie. OTP codes are HMAC-hashed with a key derived from `JWT_SECRET` (no separate pepper key), expire in 10 minutes and allow 5 attempts.
 6. **Catalog data.** The catalog is `server/data/catalogue.json.gz` (12,000 products with Amazon-hosted photos). `stock`, `isBestSeller`, `importedRank` and `listPriceCents` in it look generated, so never show them as real. `data.json` is only a fallback and its images are placeholders.
 7. **Honesty.** Do not say tests pass unless you ran them and read the output. Do not claim a feature is done in `ROADMAP.md` or `README.md` until it works.

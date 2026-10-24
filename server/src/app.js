@@ -4,9 +4,15 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import healthRouter from './routes/health.js';
+import { createCartRouter } from './routes/cart.js';
+import { createCheckoutRouter } from './routes/checkout.js';
+import { createOrdersRouter } from './routes/orders.js';
 import { createSellerRouter } from './routes/seller.js';
 import { createCatalogRouter } from './routes/catalog.js';
 import { getDefaultCatalog } from './services/catalog/catalog.js';
+import { createCommerce } from './services/commerce/index.js';
+import { createMongoCommerceStore } from './services/commerce/mongoStore.js';
+import { createPaymentProvider } from './services/payments/index.js';
 import { createAuthRouter } from './routes/auth.js';
 import { loadUser } from './middleware/auth.js';
 import { createAuthService } from './services/auth/authService.js';
@@ -21,7 +27,7 @@ import { notFound, createErrorHandler } from './middleware/errorHandler.js';
  * an optional catalog (tests pass a small fixture; production loads the catalogue file on first use),
  * and an optional auth service (tests pass one built on an in-memory store).
  */
-export function createApp(env, { catalog, authService } = {}) {
+export function createApp(env, { catalog, authService, commerce: commerceOverride } = {}) {
   const app = express();
 
   app.disable('x-powered-by');
@@ -51,6 +57,11 @@ export function createApp(env, { catalog, authService } = {}) {
 
   app.use('/api/health', healthRouter);
   app.use('/api/auth', createAuthRouter({ authService: auth, env, secret: env.JWT_SECRET }));
+  const getCatalog = () => catalog ?? getDefaultCatalog();
+  const commerce = commerceOverride ?? createCommerce({ store: createMongoCommerceStore(), getCatalog, provider: createPaymentProvider(env) });
+  app.use('/api/cart', createCartRouter({ carts: commerce.carts }));
+  app.use('/api/checkout', createCheckoutRouter({ checkout: commerce.checkout }));
+  app.use('/api/orders', createOrdersRouter({ checkout: commerce.checkout }));
   app.use('/api/seller', createSellerRouter({ authService: auth }));
   app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 

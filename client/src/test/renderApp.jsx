@@ -4,7 +4,9 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App.jsx';
 import { AuthProvider } from '../context/AuthContext.jsx';
 import { ToastProvider } from '../context/ToastContext.jsx';
+import { CartProvider } from '../context/CartContext.jsx';
 import { ApiError } from '../lib/api.js';
+import { fakeCommerce } from './fakeCommerce.js';
 
 export const asha = { id: 'u1', email: 'asha@example.com', name: 'Asha Kulkarni', emailVerified: true, isSeller: false, storeName: null, avatarUrl: null };
 
@@ -28,16 +30,18 @@ export function fakeApi(overrides = {}) {
   };
 }
 
-export function renderApp({ route = '/', api = fakeApi(), state } = {}) {
+export function renderApp({ route = '/', api = fakeApi(), commerce = fakeCommerce(), state } = {}) {
   const entry = state ? { pathname: route, state } : route;
   const utils = render(
     <MemoryRouter initialEntries={[entry]}>
       <ToastProvider>
         <AuthProvider api={api}>
-          <App />
+          <CartProvider api={commerce}>
+            <App />
+          </CartProvider>
         </AuthProvider>
       </ToastProvider>
     </MemoryRouter>,
   );
-  return { api, ...utils };
+  return { api, commerce, ...utils };
 }

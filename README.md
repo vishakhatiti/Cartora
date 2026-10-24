@@ -123,9 +123,25 @@ Check usage in Atlas under Database > Metrics. If it nears the limit, the first 
 
 **Tests:** `npm test` runs the auth tests against an in-memory store. In CI the same contract tests also run against a real MongoDB (set `MONGO_TEST_URL` to run them yourself).
 
+## Demo payments
+
+Stripe test access is not available yet, so checkout runs on a clearly labelled **demo provider**. Every checkout screen and every demo order says *Demo Mode — No Real Money Charged*. No card details are asked for, stored or sent anywhere, and no order says "Stripe".
+
+| Step | What happens |
+|---|---|
+| Cart | Guests keep ids and quantities in the browser (`cartora-cart`); signed-in users keep the cart on the server. Prices always come from the server (`POST /api/cart/quote`). On sign-in the browser cart is merged and cleared only after the server confirms. |
+| Checkout | Sign-in required. Delivery address is validated on the server. `POST /api/checkout/sessions` re-prices the account cart from the catalogue (browser totals are never read), stores a pending session and returns where to go next. |
+| Payment | `/checkout/pay/:id` shows the server's total and two buttons: **Simulate Successful Payment** and **Simulate Failed Payment**. |
+| Success | One server step marks the session succeeded, creates the order exactly once (unique on the session id), removes the purchased quantities from the cart and opens the confirmation page. Repeating the request cannot create a second order. |
+| Failure | The session is closed as failed. No order is created and the cart is untouched. The page shows the reason, "Try again" and "Back to cart". A failed or paid session cannot be changed afterwards (409). |
+
+**Replacing it with Stripe Checkout later:** add a provider in `server/src/services/payments/` with the same shape as `demoProvider.js` (`name`, `isDemo: false`, `startCheckout(session)` returning `{ redirect: { type: 'external', url } }`), select it in `createPaymentProvider`, and add a webhook route that verifies Stripe's signature and calls `checkout.completeSession(sessionId, { outcome })`. The order logic, cart clearing and idempotency are already behind that one function. The simulate route is only mounted while the provider is the demo one, and the client follows whichever redirect the server returns.
+
+**Verified:** server tests (pricing, store contract, routes including access control, idempotency and failure paths), client tests with a fake API, and the whole flow in a browser on a local server with in-memory storage and the real catalogue (guest cart, merge, failed payment, retry, successful payment, order page, mobile width). **Not verified:** the live site, the new Mongo collections against Atlas (the Mongo contract tests run in CI only), order emails (not built), an order list page and saved addresses (not built).
+
 ## Website (feature/client-shell-themes)
 
-Built so far: the page shell, three themes, toast messages, the sign-in, register and forgot-password pages, and the storefront (home, search, product pages). The cart, checkout and selling are not built yet.
+Built so far: the page shell, three themes, toast messages, the sign-in, register and forgot-password pages, and the storefront (home, search, product pages). The cart, demo checkout and order confirmation are built (see *Demo payments*). Listings and wishlist are not built yet.
 
 | Part | Detail |
 |---|---|
@@ -137,7 +153,7 @@ Built so far: the page shell, three themes, toast messages, the sign-in, registe
 | Google button | Shown only when `VITE_GOOGLE_CLIENT_ID` is set on Vercel, so there is never a dead button. |
 | Home | Hero, 24 category tiles and the most-rated products, all from the catalog API. |
 | Search | Header search box with suggestions (keyboard operable). `/products` has category, brand, price and rating filters, sort and pagination; all of them live in the URL, so a result page can be shared. Deals are not offered because the dataset has none. |
-| Product page | Photo gallery, price tag, features, description, specifications, rating breakdown, reviews (from the dataset sample) and related products. Text is rendered as plain text, never as HTML. There is no cart button until the cart feature exists. |
+| Product page | Photo gallery, price tag, features, description, specifications, rating breakdown, reviews (from the dataset sample) and related products. Text is rendered as plain text, never as HTML. It has quantity and **Add to cart**; the toast appears only after the cart really changed. |
 | Photos | Amazon-hosted photos load lazily. If a product has none, or a photo fails to load, generated artwork is drawn instead. |
 | Look | Dark green header and page bands, peach product tiles with a white photo tile, orange for active pills, pagination and key buttons, serif headings. Inspired by a reference mockup the project owner supplied; the name, imagery and layout are not copied. |
 | Buying / Selling | A two-way switch in the header (and the menu). The mode comes from the address (`/sell...`), so it survives a refresh. Guests who pick Selling go to sign-in; signed-in customers go to `/sell/start`, where one form (store name) turns the same account into a seller account. The server records it (`POST /api/seller/activate`) and the page changes only after the server confirms. `GET /api/seller/me` is seller-only (401 for guests, 403 for customers). |
@@ -161,7 +177,8 @@ Real values are never committed. Copy the example files and fill them in.
 | `JWT_SECRET` | Signs login tokens. Also used to derive the key that hashes one-time codes |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client, used for Google sign-in and the Gmail API |
 | `GOOGLE_REFRESH_TOKEN`, `EMAIL_USER` | Sending email through the Gmail API as this Gmail address |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe test mode |
+| `PAYMENT_PROVIDER` | `demo` (default when empty) simulates payments. `stripe` is reserved: the server refuses to start with it until a Stripe provider is written |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe test mode. Not used yet |
 | `NODE_OPTIONS` | On Render set `--max-old-space-size=300` (already in `render.yaml`). The catalogue needs about 200 MB of heap to load; peak process memory measured locally was 327 MB with this cap and 386 MB without. The free plan has 512 MB. |
 | `FRONTEND_URL`, `PORT`, `NODE_ENV` | App settings. On Render, `PORT` is set by the platform |
 | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID` | Public client settings |

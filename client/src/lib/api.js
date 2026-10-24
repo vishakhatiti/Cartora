@@ -90,3 +90,19 @@ export async function fetchApiStatus(signal) {
     clearTimeout(timer);
   }
 }
+
+const toBody = (items) => ({ items: items.map(({ productId, qty }) => ({ productId, qty })) });
+
+/** Cart, checkout and orders. Totals and prices always come back from the server. */
+export const commerceApi = {
+  quote: (items, signal) => apiFetch('/cart/quote', { method: 'POST', body: toBody(items), signal }),
+  getCart: (signal) => apiFetch('/cart', { signal }),
+  setQuantity: (productId, qty) => apiFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: 'PUT', body: { qty } }),
+  removeItem: (productId) => apiFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: 'DELETE' }),
+  merge: (items) => apiFetch('/cart/merge', { method: 'POST', body: toBody(items) }),
+  checkoutConfig: (signal) => apiFetch('/checkout/config', { signal }),
+  startCheckout: (address) => apiFetch('/checkout/sessions', { method: 'POST', body: { address } }),
+  getSession: (id, signal) => apiFetch(`/checkout/sessions/${encodeURIComponent(id)}`, { signal }),
+  simulate: (id, outcome) => apiFetch(`/checkout/sessions/${encodeURIComponent(id)}/simulate`, { method: 'POST', body: { outcome } }),
+  getOrder: (id, signal) => apiFetch(`/orders/${encodeURIComponent(id)}`, { signal }),
+};

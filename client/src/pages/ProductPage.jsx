@@ -3,6 +3,9 @@ import { Link, useParams } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
 import { formatCount, formatDate } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
+import { useCart } from '../context/CartContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+import QtyStepper from '../components/QtyStepper.jsx';
 import ProductImage from '../components/ProductImage.jsx';
 import PriceTag from '../components/PriceTag.jsx';
 import Stars from '../components/Stars.jsx';
@@ -26,6 +29,33 @@ function Gallery({ product }) {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function AddToCart({ product }) {
+  const cart = useCart();
+  const toast = useToast();
+  const [qty, setQty] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const add = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await cart.add(product.id, qty);
+      toast.success(`Added ${qty} to your cart.`); // only after the cart really changed
+    } catch (err) {
+      toast.error(err.message || 'Could not add this to your cart. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-4">
+      <QtyStepper value={qty} onChange={setQty} disabled={busy} label="Quantity to add" />
+      <button type="button" onClick={add} disabled={busy} className="rounded-full bg-orange px-7 py-3 font-semibold text-orange-fg disabled:opacity-60">
+        {busy ? 'Adding…' : 'Add to cart'}
+      </button>
     </div>
   );
 }
@@ -140,6 +170,7 @@ export default function ProductPage() {
           <div className="mt-3"><Stars value={p.ratingAvg} count={p.ratingCount} /></div>
           <div className="mt-5"><PriceTag product={p} large /></div>
           <p className="mt-2 text-sm text-muted">Price in US dollars. Shipping is free on orders of $50.00 or more, otherwise $5.99.</p>
+          <AddToCart product={p} />
           {p.features.length > 0 && (
             <section aria-labelledby="features-h" className="mt-6">
               <h2 id="features-h" className="text-lg font-bold">About this item</h2>

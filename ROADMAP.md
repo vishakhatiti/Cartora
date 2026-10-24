@@ -35,8 +35,9 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `feature/storefront-ui` | Home, search with suggestions, filters, sort, pagination (URL state), product page with gallery, specs, rating breakdown, reviews and related products. **Built; tested with a fake API and checked in a browser against the real catalogue locally; not yet checked on the live site.** | 2 |
 | `feature/reviews` | Review list and add review, rating updates | 2 |
 | `feature/seller-mode` | Buyer/Seller switch, seller activation, seller-only API and dashboard shell, reference-inspired restyle. **Built; server 208 and client 78 tests pass; switch and activation checked in a browser locally. Adding products, stock and seller orders are not built yet.** | 2 |
-| `feature/cart-wishlist` | Cart and wishlist with guest merge | 3 |
-| `feature/stripe-checkout` | Stripe Checkout and webhook | 3 |
+| `feature/cart-wishlist` | Wishlist with guest merge (the cart itself shipped in `feature/demo-payments`) | 3 |
+| `feature/demo-payments` | Cart, checkout with a labelled demo payment provider (simulate success or failure), orders created only after success, confirmation page. **Built; server 243 and client 102 tests pass; full flow checked in a browser locally; not yet checked on the live site. No order emails, order list page or saved addresses yet. Wishlist is not part of this branch.** | 3 |
+| `feature/stripe-checkout` | Stripe Checkout and verified, idempotent webhook (replaces the demo provider when test keys exist) | 3 |
 | `feature/orders-notifications` | Orders, order email, notification bell | 3 |
 | `feature/client-shell-themes` | React app shell, routing, three themes, toasts, sign-in/register/forgot pages. **Built; tested with a fake API, not yet against the live API.** | 0-4 |
 | `feature/design-system` | Forest-green tokens, DM Serif Display and Inter, two-row header with category search, slide-out menu, footer, dialogs. **Built; 68 client tests pass; checked in a browser locally; not yet checked on the live site.** | 1 |
@@ -74,7 +75,8 @@ The base setup (docs, folder structure, env examples) lives on `main`. From here
 | `reviews` | productId, userId or legacyUserId, rating, title, text, verifiedPurchase | Unique (productId, userId) for real users |
 | `carts` | userId, items[{productId, qty}] | Guests keep their cart in the browser |
 | `wishlists` | userId, productIds[] | Same merge rule as the cart |
-| `orders` | userId or guestEmail, items[], totals, status, stripeSessionId (unique), timeline[] | Webhook is idempotent on `stripeSessionId` |
+| `orders` | userId or guestEmail, orderNumber, items[], totals, status, payment{provider, demo, sessionId (unique)}, timeline[] | Order creation is idempotent on `payment.sessionId` |
+| `checkoutsessions` | userId, provider, status (pending/succeeded/failed), item snapshot, totals, address, orderId, expiresAt (TTL) | One per payment attempt; failed sessions are final |
 | `otps` | email, purpose, codeHash, expiresAt (TTL), attempts | HMAC-hashed with a key derived from `JWT_SECRET`; max 5 attempts |
 | `notifications` | userId, type, message, readAt | Created when an order is paid |
 
@@ -87,8 +89,9 @@ Prices are stored as integer cents. The server recomputes all totals from the da
 | Auth | `POST /api/auth/register`, `/verify-email`, `/login`, `/login-code/request`, `/login-code/verify`, `/forgot`, `/reset`, `/google`, `/guest`, `/logout`; `GET /api/auth/me` |
 | Products | `GET /api/products` (q, category, minPrice, maxPrice, rating, deals, sort, page), `GET /api/products/:id`, `GET /api/products/suggest`, `POST /api/products` (seller) |
 | Reviews | `GET /api/products/:id/reviews`, `POST /api/products/:id/reviews` |
-| Cart and wishlist | `GET/PUT /api/cart`, `GET/PUT /api/wishlist`, `POST /api/cart/merge` |
-| Checkout | `POST /api/checkout/session`, `POST /api/webhooks/stripe` |
+| Cart | `POST /api/cart/quote` (public), `GET /api/cart`, `PUT/DELETE /api/cart/items/:productId`, `POST /api/cart/merge`, `DELETE /api/cart` |
+| Wishlist | `GET/PUT /api/wishlist` (not built) |
+| Checkout | `GET /api/checkout/config`, `POST /api/checkout/sessions`, `GET /api/checkout/sessions/:id`, `POST /api/checkout/sessions/:id/simulate` (demo provider only). `POST /api/webhooks/stripe` is not built |
 | Orders | `GET /api/orders`, `GET /api/orders/:id` |
 | Account | `POST /api/account/become-seller`, `GET /api/notifications`, `POST /api/notifications/read` |
 
