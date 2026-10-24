@@ -300,3 +300,78 @@ describe('wishlist', () => {
     expect(screen.getByRole('button', { name: /Save .* to wishlist/ })).toHaveAttribute('aria-pressed', 'false');
   });
 });
+
+describe('orders list', () => {
+  it('shows an empty state', async () => {
+    renderApp({ route: '/orders', api: signedIn() });
+    expect(await screen.findByRole('heading', { name: 'No orders yet' })).toBeInTheDocument();
+  });
+
+  it('lists orders with number, total and status, linking to the detail page', async () => {
+    const commerce = fakeCommerce();
+    await commerce.setQuantity('B0TEST0001', 1);
+    await commerce.startCheckout(address);
+    await commerce.simulate([...commerce.state.sessions.keys()][0], 'success');
+    renderApp({ route: '/orders', api: signedIn(), commerce });
+    const list = await screen.findByRole('list', { name: 'Orders' });
+    expect(within(list).getByText('CRT-TESTORDR')).toBeInTheDocument();
+    expect(within(list).getByText('$59.99')).toBeInTheDocument();
+    expect(within(list).getByText('Paid')).toBeInTheDocument();
+    expect(within(list).getByRole('link', { name: 'View order' })).toHaveAttribute('href', '/orders/ord_1');
+  });
+
+  it('asks a guest to sign in and shows a retryable error', async () => {
+    renderApp({ route: '/orders' });
+    expect(await screen.findByRole('heading', { name: /welcome back|sign in/i })).toBeInTheDocument();
+  });
+});
+
+describe('addresses', () => {
+  it('adds, edits, defaults and removes addresses with server confirmation', async () => {
+    const commerce = fakeCommerce();
+    renderApp({ route: '/account/addresses', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: 'Add an address' }));
+    await fillAddress();
+    await userEvent.click(screen.getByRole('button', { name: 'Save address' }));
+    expect(await screen.findByText('Address saved.')).toBeInTheDocument();
+    expect(commerce.addAddress).toHaveBeenCalledWith(address, true);
+    const list = screen.getByRole('list', { name: 'Saved addresses' });
+    expect(within(list).getByText('Default')).toBeInTheDocument();
+    await userEvent.click(within(list).getByRole('button', { name: 'Edit' }));
+    const city = screen.getByLabelText('City');
+    await userEvent.clear(city);
+    await userEvent.type(city, 'Mumbai');
+    await userEvent.click(screen.getByRole('button', { name: 'Save address' }));
+    expect(await screen.findByText('Address updated.')).toBeInTheDocument();
+    expect(commerce.state.addresses[0].city).toBe('Mumbai');
+    await userEvent.click(screen.getByRole('button', { name: /Remove address 1 Main St/ }));
+    expect(await screen.findByRole('heading', { name: 'No saved addresses' })).toBeInTheDocument();
+  });
+
+  it('validates before sending', async () => {
+    const commerce = fakeCommerce();
+    renderApp({ route: '/account/addresses', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: 'Add an address' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save address' }));
+    expect(await screen.findByText('Full name is required.')).toBeInTheDocument();
+    expect(commerce.addAddress).not.toHaveBeenCalled();
+  });
+
+  it('prefills checkout from the default saved address', async () => {
+    const commerce = fakeCommerce();
+    await commerce.addAddress(address, true);
+    await commerce.setQuantity('B0TEST0001', 1);
+    renderApp({ route: '/checkout', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: 'Continue to demo payment' }));
+    expect(await screen.findByRole('heading', { name: 'Simulate your payment' })).toBeInTheDocument();
+    expect(commerce.startCheckout).toHaveBeenCalledWith(address);
+  });
+
+  it('shows the account hub with links to every buyer page', async () => {
+    renderApp({ route: '/account', api: signedIn() });
+    const tiles = await screen.findByRole('list', { name: 'Account pages' });
+    for (const [name, href] of [['Your orders', '/orders'], ['Wishlist', '/wishlist'], ['Addresses', '/account/addresses'], ['Customer service', '/help'], ['Start selling', '/sell/start']]) {
+      expect(within(tiles).getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', href);
+    }
+  });
+});

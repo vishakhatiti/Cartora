@@ -5,6 +5,8 @@ import ProductsPage from './pages/ProductsPage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
 import ShelfPage from './pages/ShelfPage.jsx';
 import WishlistPage from './pages/WishlistPage.jsx';
+import OrdersPage from './pages/OrdersPage.jsx';
+import AddressesPage from './pages/AddressesPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import DemoPaymentPage from './pages/DemoPaymentPage.jsx';
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="cart" element={<CartPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/pay/:id" element={<DemoPaymentPage />} />
+        <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:id" element={<OrderPage />} />
         <Route path="sell" element={<SellerDashboardPage />} />
         <Route path="sell/start" element={<SellerStartPage />} />
@@ -38,6 +41,7 @@ export default function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot" element={<ForgotPage />} />
         <Route path="account" element={<AccountPage />} />
+        <Route path="account/addresses" element={<AddressesPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

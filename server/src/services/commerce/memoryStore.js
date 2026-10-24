@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 export function createMemoryCommerceStore() {
   const carts = new Map(); // userId -> [{ productId, qty }]
   const wishlists = new Map(); // userId -> [productId]
+  const addressBooks = new Map(); // userId -> [address]
   const sessions = new Map();
   const orders = new Map();
   const orderIdBySession = new Map();
@@ -27,6 +28,14 @@ export function createMemoryCommerceStore() {
     async setWishlistIds(userId, ids) {
       if (ids.length === 0) wishlists.delete(userId); else wishlists.set(userId, [...ids]);
       return [...ids];
+    },
+
+    async getAddresses(userId) {
+      return clone(addressBooks.get(userId) ?? []);
+    },
+    async setAddresses(userId, addresses) {
+      if (addresses.length === 0) addressBooks.delete(userId); else addressBooks.set(userId, clone(addresses));
+      return clone(addresses);
     },
 
     async createSession(data) {

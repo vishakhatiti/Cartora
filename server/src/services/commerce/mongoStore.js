@@ -3,6 +3,7 @@ import { Cart } from '../../models/Cart.js';
 import { CheckoutSession } from '../../models/CheckoutSession.js';
 import { Order } from '../../models/Order.js';
 import { Wishlist } from '../../models/Wishlist.js';
+import { AddressBook } from '../../models/AddressBook.js';
 
 const isValidId = (id) => mongoose.isValidObjectId(id) && String(new mongoose.Types.ObjectId(String(id))) === String(id);
 
@@ -49,6 +50,21 @@ export function createMongoCommerceStore() {
       if (ids.length === 0) await Wishlist.deleteOne({ userId });
       else await Wishlist.findOneAndUpdate({ userId }, { $set: { productIds: ids } }, { upsert: true, runValidators: true });
       return ids;
+    },
+
+    async getAddresses(userId) {
+      if (!isValidId(userId)) return [];
+      const doc = await AddressBook.findOne({ userId }).lean();
+      return (doc?.addresses ?? []).map((a) => ({
+        id: a.id, name: a.name, line1: a.line1, ...(a.line2 ? { line2: a.line2 } : {}),
+        city: a.city, state: a.state, postalCode: a.postalCode, country: a.country, isDefault: Boolean(a.isDefault),
+      }));
+    },
+    async setAddresses(userId, addresses) {
+      if (!isValidId(userId)) return [];
+      if (addresses.length === 0) await AddressBook.deleteOne({ userId });
+      else await AddressBook.findOneAndUpdate({ userId }, { $set: { addresses } }, { upsert: true, runValidators: true });
+      return addresses;
     },
 
     async createSession(data) {

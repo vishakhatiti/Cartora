@@ -58,6 +58,9 @@ export default function UserMenu() {
           <Link role="menuitem" to="/account" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
             Your account
           </Link>
+          <Link role="menuitem" to="/orders" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
+            Your orders
+          </Link>
           <Link role="menuitem" to="/wishlist" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
             Wishlist
           </Link>
