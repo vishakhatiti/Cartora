@@ -60,3 +60,20 @@ describe('security headers and CORS', () => {
     expect(res.headers['access-control-allow-origin']).not.toBe('https://evil.example');
   });
 });
+
+describe('CORS', () => {
+  const origin = 'https://shop-at-cartora.vercel.app';
+  // The setting is typed with a trailing slash on purpose: that mistake must not block the real origin.
+  const corsApp = createApp(parseEnv({ NODE_ENV: 'test', FRONTEND_URL: `${origin}/` }));
+
+  it('allows the configured frontend origin with credentials', async () => {
+    const res = await request(corsApp).get('/api/health').set('Origin', origin);
+    expect(res.headers['access-control-allow-origin']).toBe(origin);
+    expect(res.headers['access-control-allow-credentials']).toBe('true');
+  });
+
+  it('does not allow another origin', async () => {
+    const res = await request(corsApp).get('/api/health').set('Origin', 'https://evil.example');
+    expect(res.headers['access-control-allow-origin']).toBe(origin); // never echoes the caller's origin
+  });
+});

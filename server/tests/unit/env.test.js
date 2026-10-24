@@ -32,6 +32,12 @@ describe('parseEnv', () => {
     expect(message).not.toContain(secret);
   });
 
+  it('reduces FRONTEND_URL to its origin so a trailing slash or path cannot break CORS', () => {
+    expect(parseEnv({ FRONTEND_URL: 'https://shop-at-cartora.vercel.app/' }).FRONTEND_URL).toBe('https://shop-at-cartora.vercel.app');
+    expect(parseEnv({ FRONTEND_URL: 'https://shop-at-cartora.vercel.app/some/path?x=1' }).FRONTEND_URL).toBe('https://shop-at-cartora.vercel.app');
+    expect(parseEnv({ FRONTEND_URL: 'http://localhost:5173' }).FRONTEND_URL).toBe('http://localhost:5173');
+  });
+
   it('rejects an invalid FRONTEND_URL', () => {
     expect(() => parseEnv({ FRONTEND_URL: 'not-a-url' })).toThrow(/FRONTEND_URL/);
   });

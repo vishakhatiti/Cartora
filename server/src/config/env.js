@@ -4,7 +4,9 @@ import { z } from 'zod';
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
-  FRONTEND_URL: z.url().default('http://localhost:5173'),
+  // Reduced to its origin (scheme, host, port) because browsers send Origin without a path or trailing
+  // slash, and CORS compares the two exactly. A value typed as "https://x.vercel.app/" still works.
+  FRONTEND_URL: z.url().default('http://localhost:5173').transform((value) => new URL(value).origin),
 
   // Full Atlas connection string, including the database name, for example
   // mongodb+srv://USER:PASSWORD@cluster0.abcde.mongodb.net/cartora?retryWrites=true&w=majority
