@@ -13,7 +13,10 @@ const sessionView = (s, provider) => ({
 
 /** Public order shape. `payment.demo` is true only for simulated payments; nothing here ever says "stripe" for a demo. */
 export const orderView = (o) => ({
-  id: o.id, orderNumber: o.orderNumber, status: o.status, items: o.items, subtotalCents: o.subtotalCents,
+  id: o.id, orderNumber: o.orderNumber, status: o.status,
+  // The seller's account id is internal; the store name and shipping state are shown to the buyer.
+  items: o.items.map(({ sellerId, ...item }) => item),
+  subtotalCents: o.subtotalCents,
   shippingCents: o.shippingCents, totalCents: o.totalCents, currency: o.currency, shippingAddress: o.shippingAddress,
   payment: { provider: o.payment.provider, demo: o.payment.demo }, paidAt: o.paidAt, createdAt: o.createdAt,
 });
@@ -23,7 +26,7 @@ export const orderView = (o) => ({
  * completeSession() is the single place that creates orders. The demo "simulate" route calls it today and the
  * verified Stripe webhook will call it later, so the rules (idempotency, cart handling) do not change.
  */
-export function createCheckoutService({ store, carts, provider, getCatalog, now = () => new Date() }) {
+export function createCheckoutService({ store, carts, provider, getCatalog, onStockChanged = () => {}, now = () => new Date() }) {
   const ownSession = async (userId, id) => {
     const session = await store.findSession(id);
     if (!session || session.userId !== userId) throw new AppError(404, 'Checkout not found.', 'NOT_FOUND');
@@ -43,7 +46,7 @@ export function createCheckoutService({ store, carts, provider, getCatalog, now 
       const session = await store.createSession({
         userId: user.id,
         provider: provider.name,
-        items: priced.lines.map(({ productId, title, brand, image, unitPriceCents, qty }) => ({ productId, title, brand, image, unitPriceCents, qty })),
+        items: priced.lines.map(({ productId, title, brand, image, unitPriceCents, qty, sellerId, storeName }) => ({ productId, title, brand, image, unitPriceCents, qty, sellerId, storeName })),
         ...priced.totals,
         currency: priced.currency,
         shippingAddress: address,
@@ -83,7 +86,7 @@ export function createCheckoutService({ store, carts, provider, getCatalog, now 
         orderNumber: orderNumber(),
         userId: session.userId,
         status: 'paid',
-        items: session.items,
+        items: session.items.map((i) => ({ ...i, fulfilment: 'pending' })),
         subtotalCents: session.subtotalCents,
         shippingCents: session.shippingCents,
         totalCents: session.totalCents,
@@ -96,6 +99,7 @@ export function createCheckoutService({ store, carts, provider, getCatalog, now 
       if (created) {
         await store.attachOrderToSession(sessionId, order.id);
         await carts.removePurchased(session.userId, session.items);
+        onStockChanged(await store.consumeStock(session.items)); // seller listings only; never goes below zero
       }
       return { session: sessionView(await store.findSession(sessionId), provider), order: orderView(order) };
     },

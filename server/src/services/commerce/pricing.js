@@ -28,6 +28,14 @@ export function priceItems(catalog, items) {
       issues.push({ productId, reason: 'UNAVAILABLE', message: 'This product is no longer available.' });
       continue;
     }
+    if (product.stockQty != null && product.stockQty < 1) {
+      issues.push({ productId, reason: 'OUT_OF_STOCK', message: 'This product is out of stock.' });
+      continue;
+    }
+    if (product.stockQty != null && qty > product.stockQty) {
+      issues.push({ productId, reason: 'INSUFFICIENT_STOCK', message: `Only ${product.stockQty} available.`, available: product.stockQty });
+      continue;
+    }
     lines.push({
       productId,
       title: product.title,
@@ -37,6 +45,9 @@ export function priceItems(catalog, items) {
       unitPriceCents: product.finalPriceCents,
       qty,
       lineTotalCents: product.finalPriceCents * qty,
+      sellerId: product.sellerId ?? null,
+      storeName: product.storeName ?? null,
+      stockQty: product.stockQty ?? null,
     });
   }
   const totals = computeTotals(lines);

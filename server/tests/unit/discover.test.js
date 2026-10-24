@@ -44,3 +44,41 @@ describe('discovery shelves', () => {
     expect(ids(c.discover('best-sellers'))).toEqual(['B', 'A']);
   });
 });
+
+describe('seller listings in the catalogue', () => {
+  const listing = (id, over = {}) => ({
+    parent_asin: id, title: `Listing ${id}`, price_cents: 1500, category: { slug: 'crafts', label: 'Crafts' }, brand: 'Asha Crafts',
+    images: [{ thumb: 'https://img.test/a.jpg', large: 'https://img.test/a.jpg' }], seller_id: 'seller-1', store_name: 'Asha Crafts',
+    stock_qty: 3, listed_at: '2026-10-01T00:00:00.000Z', ...over,
+  });
+
+  it('adds a listing to search, categories and new releases, and removes it again', () => {
+    const c = createCatalog([raw('A')]);
+    expect(c.hasCategory('crafts')).toBe(false);
+    c.upsert(listing('S1'));
+    expect(c.hasCategory('crafts')).toBe(true);
+    expect(c.categories.find((x) => x.slug === 'crafts').count).toBe(1);
+    expect(c.size).toBe(2);
+    expect(c.getById('S1')).toMatchObject({ sellerId: 'seller-1', storeName: 'Asha Crafts', stockQty: 3 });
+    expect(c.search({ q: 'listing' }).items.map((p) => p.id)).toEqual(['S1']);
+    expect(c.discover('new-releases').items[0].id).toBe('S1');
+    expect(c.remove('S1')).toBe(true);
+    expect(c.hasCategory('crafts')).toBe(false);
+    expect(c.search({ q: 'listing' }).items).toEqual([]);
+    expect(c.remove('S1')).toBe(false);
+  });
+
+  it('replaces a listing in place when it is edited', () => {
+    const c = createCatalog([]);
+    c.upsert(listing('S2'));
+    c.upsert(listing('S2', { price_cents: 2500, title: 'Renamed' }));
+    expect(c.size).toBe(1);
+    expect(c.getById('S2')).toMatchObject({ finalPriceCents: 2500, title: 'Renamed' });
+  });
+
+  it('never treats dataset products as seller-tracked stock', () => {
+    const c = createCatalog([raw('A', { stock: 99 })]);
+    expect(c.getById('A').stockQty).toBeNull();
+    expect(c.getById('A').sellerId).toBeNull();
+  });
+});

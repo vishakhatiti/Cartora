@@ -83,12 +83,18 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
     byId.set(indexed.id, indexed);
   }
 
-  const categories = [...countBy(products, (p) => p.category.slug)].map(([slug, count]) => ({
-    slug,
-    label: products.find((p) => p.category.slug === slug).category.label,
-    count,
-  })).sort((a, b) => a.label.localeCompare(b.label));
-  const categorySlugs = new Set(categories.map((c) => c.slug));
+  // Categories are recomputed whenever a seller listing is added or removed, so counts stay true.
+  let categories = [];
+  let categorySlugs = new Set();
+  function rebuildCategories() {
+    categories = [...countBy(products, (p) => p.category.slug)].map(([slug, count]) => ({
+      slug,
+      label: products.find((p) => p.category.slug === slug).category.label,
+      count,
+    })).sort((a, b) => a.label.localeCompare(b.label));
+    categorySlugs = new Set(categories.map((c) => c.slug));
+  }
+  rebuildCategories();
 
   function search({
     q = '', category, brands = [], minPriceCents, maxPriceCents, minRating, dealsOnly = false,
@@ -209,6 +215,40 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
     };
   }
 
+  /** Add or replace one seller listing at runtime (raw listing shape, same as a dataset record). Returns the product or null. */
+  function upsert(raw) {
+    const product = normalizeProduct(raw);
+    if (!product) return null;
+    const indexed = {
+      ...product,
+      imageKind: product.hasRealImage ? 'real' : 'none',
+      stockImage: null,
+      titleLower: product.title.toLowerCase(),
+      titleWords: tokenize(product.title),
+      haystack: `${product.title} ${product.brand} ${product.category.label}`.toLowerCase(),
+    };
+    const existing = byId.get(indexed.id);
+    if (existing) products.splice(products.indexOf(existing), 1, indexed); else products.push(indexed);
+    byId.set(indexed.id, indexed);
+    changed();
+    return indexed;
+  }
+
+  /** Take a listing out of the shop (deactivated or deleted). Dataset products can be removed the same way but are not. */
+  function remove(id) {
+    const existing = byId.get(id);
+    if (!existing) return false;
+    products.splice(products.indexOf(existing), 1);
+    byId.delete(id);
+    changed();
+    return true;
+  }
+
+  function changed() {
+    rebuildCategories();
+    shelves.clear();
+  }
+
   // Discovery shelves. The data has no sales figures or release dates, so these are ranked from real review
   // activity only, and each result says what the ranking means. The generated importedRank/isBestSeller are never used.
   const DAY = 86_400_000;
@@ -219,17 +259,18 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
   const BASIS = {
     trending: 'Ranked by reviews written in the most recent 12 months of the review data.',
     'best-sellers': 'Most-rated products with an average of 4 stars or more. Sales figures are not available.',
-    'new-releases': 'Products whose first review is the most recent. Release dates are not available.',
+    'new-releases': 'Newly listed seller products first, then products whose first review is the most recent. Release dates are not available.',
   };
   const shelves = new Map();
   function shelf(kind) {
     if (shelves.has(kind)) return shelves.get(kind);
-    const recent = (p) => reviewTimes.get(p.id).filter((t) => t >= windowEnd - 365 * DAY).length;
-    const first = (p) => Math.min(...reviewTimes.get(p.id));
+    const times = (p) => reviewTimes.get(p.id) ?? []; // seller listings have no dataset reviews
+    const recent = (p) => times(p).filter((t) => t >= windowEnd - 365 * DAY).length;
+    const first = (p) => (p.listedAt ? Date.parse(p.listedAt) : Math.min(...times(p)));
     const rules = {
       trending: { keep: (p) => recent(p) > 0, score: recent },
       'best-sellers': { keep: (p) => p.ratingAvg >= 4 && p.ratingCount > 0, score: (p) => p.ratingCount },
-      'new-releases': { keep: (p) => reviewTimes.get(p.id).length > 0, score: first },
+      'new-releases': { keep: (p) => Boolean(p.listedAt) || times(p).length > 0, score: first },
     }[kind];
     const ranked = products.filter(rules.keep).map((p) => [p, rules.score(p)])
       .sort((a, b) => b[1] - a[1] || b[0].ratingCount - a[0].ratingCount || a[0].id.localeCompare(b[0].id))
@@ -248,11 +289,11 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
   }
 
   return {
-    size: products.length,
+    get size() { return products.length; },
     skipped,
-    categories,
+    get categories() { return categories; },
     hasCategory: (slug) => categorySlugs.has(slug),
-    search, discover, getById, getSummary, getDetail, getReviews, getRelated, suggest,
+    search, discover, upsert, remove, getById, getSummary, getDetail, getReviews, getRelated, suggest,
   };
 }
 

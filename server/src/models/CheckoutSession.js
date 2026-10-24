@@ -20,6 +20,8 @@ const checkoutSessionSchema = new mongoose.Schema(
         image: String,
         unitPriceCents: { type: Number, required: true, min: 0, validate: Number.isInteger },
         qty: { type: Number, required: true, min: 1, max: MAX_QTY_PER_ITEM, validate: Number.isInteger },
+        sellerId: { type: String, default: null },
+        storeName: { type: String, default: null },
       },
     ],
     subtotalCents: { type: Number, required: true, min: 0 },

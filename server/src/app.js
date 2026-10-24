@@ -68,7 +68,8 @@ export function createApp(env, { catalog, authService, commerce: commerceOverrid
   app.use('/api/wishlist', createWishlistRouter({ wishlist: commerce.wishlist }));
   app.use('/api/checkout', createCheckoutRouter({ checkout: commerce.checkout }));
   app.use('/api/orders', createOrdersRouter({ checkout: commerce.checkout }));
-  app.use('/api/seller', createSellerRouter({ authService: auth }));
+  app.use('/api/seller', createSellerRouter({ authService: auth, seller: commerce.seller }));
+  app.locals.commerce = commerce; // server.js loads seller listings into the catalogue at startup
   app.use('/api', createCatalogRouter(() => catalog ?? getDefaultCatalog()));
 
   app.use(notFound);

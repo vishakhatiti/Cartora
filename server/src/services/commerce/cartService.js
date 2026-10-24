@@ -17,7 +17,11 @@ export function createCartService({ store, getCatalog }) {
     },
 
     async setQuantity(userId, productId, qty) {
-      if (!getCatalog().getById(productId)) throw new AppError(404, 'This product is not available.', 'PRODUCT_NOT_FOUND');
+      const product = getCatalog().getById(productId);
+      if (!product) throw new AppError(404, 'This product is not available.', 'PRODUCT_NOT_FOUND');
+      if (product.stockQty != null && qty > product.stockQty) {
+        throw new AppError(409, product.stockQty < 1 ? 'This product is out of stock.' : `Only ${product.stockQty} available.`, 'INSUFFICIENT_STOCK');
+      }
       const items = await store.getCartItems(userId);
       const next = items.filter((i) => i.productId !== productId);
       if (next.length >= MAX_CART_LINES && !items.some((i) => i.productId === productId)) {

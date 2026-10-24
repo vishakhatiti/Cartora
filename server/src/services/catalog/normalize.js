@@ -99,6 +99,12 @@ export function normalizeProduct(raw) {
     // When true the UI draws generated artwork instead of a photo.
     hasRealImage: images.length > 0,
     reviews,
+    // Seller listings only. stockQty is a real, seller-managed count (null = not tracked, as for the dataset's products,
+    // whose own `stock` field is generated and never used).
+    sellerId: raw.seller_id ? String(raw.seller_id) : null,
+    storeName: raw.store_name ? String(raw.store_name) : null,
+    stockQty: Number.isInteger(raw.stock_qty) && raw.stock_qty >= 0 ? raw.stock_qty : null,
+    listedAt: raw.listed_at ? new Date(raw.listed_at).toISOString() : null,
   };
 }
 
