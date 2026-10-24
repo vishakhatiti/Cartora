@@ -27,12 +27,13 @@ const orderSchema = new mongoose.Schema(
       type: [
         {
           _id: false,
-          productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+          productId: { type: String, required: true, trim: true, maxlength: 40 }, // catalogue id
           title: { type: String, required: true },
           image: String,
           unitPriceCents: { type: Number, required: true, min: 0, validate: Number.isInteger },
           qty: { type: Number, required: true, min: 1, max: MAX_QTY_PER_ITEM, validate: Number.isInteger },
           sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+          brand: String,
         },
       ],
       validate: [(items) => items.length > 0, 'An order needs at least one item'],
@@ -44,7 +45,17 @@ const orderSchema = new mongoose.Schema(
     currency: { type: String, default: 'usd' },
 
     status: { type: String, enum: ORDER_STATUSES, default: 'pending', index: true },
-    stripeSessionId: { type: String, unique: true, sparse: true }, // webhook idempotency key
+    // Public order reference shown to the buyer, for example CRT-7K3M9QX2.
+    orderNumber: { type: String, unique: true, sparse: true },
+    // How this order was paid. provider 'demo' means a simulated payment: no money moved and no payment
+    // company was involved. demo must never be true for a real Stripe payment, and vice versa.
+    payment: {
+      _id: false,
+      provider: { type: String, enum: ['demo', 'stripe'] },
+      demo: { type: Boolean, default: false },
+      // The checkout session id. Unique, so a repeated "payment succeeded" event cannot create a second order.
+      sessionId: { type: String, unique: true, sparse: true },
+    },
     shippingAddress: addressSchema,
     paidAt: Date,
     timeline: [{ _id: false, status: { type: String, enum: ORDER_STATUSES }, at: { type: Date, default: Date.now } }],

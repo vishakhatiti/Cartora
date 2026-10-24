@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import mongoose from 'mongoose';
-import { User, Product, Review, Cart, Order, Otp, Notification } from '../../src/models/index.js';
+import { User, Product, Review, Cart, Order, CheckoutSession, Otp, Notification } from '../../src/models/index.js';
 
 const oid = () => new mongoose.Types.ObjectId();
 
@@ -110,7 +110,7 @@ describe('Review', () => {
 
 describe('Cart', () => {
   it('limits quantity per item to 1-99', async () => {
-    const make = (qty) => new Cart({ userId: oid(), items: [{ productId: oid(), qty }] });
+    const make = (qty) => new Cart({ userId: oid(), items: [{ productId: 'B000TEST01', qty }] });
     expect(await errorsOf(make(2))).toEqual({});
     expect(Object.keys(await errorsOf(make(0))).length).toBeGreaterThan(0);
     expect(Object.keys(await errorsOf(make(100))).length).toBeGreaterThan(0);
@@ -118,7 +118,7 @@ describe('Cart', () => {
 });
 
 describe('Order', () => {
-  const item = () => ({ productId: oid(), title: 'Thing', unitPriceCents: 1000, qty: 1 });
+  const item = () => ({ productId: 'B000TEST01', title: 'Thing', unitPriceCents: 1000, qty: 1 });
   const totals = { subtotalCents: 1000, shippingCents: 599, totalCents: 1599 };
 
   it('accepts a guest order with an email', async () => {
@@ -141,6 +141,32 @@ describe('Order', () => {
 
   it('starts as pending', () => {
     expect(new Order({ userId: oid(), items: [item()], ...totals }).status).toBe('pending');
+  });
+
+  it('records how it was paid and refuses an unknown provider', async () => {
+    const demo = new Order({ userId: oid(), items: [item()], ...totals, payment: { provider: 'demo', demo: true, sessionId: 'demo_1' } });
+    expect(await errorsOf(demo)).toEqual({});
+    const bad = new Order({ userId: oid(), items: [item()], ...totals, payment: { provider: 'paypal' } });
+    expect((await errorsOf(bad))['payment.provider']).toBeDefined();
+  });
+});
+
+describe('CheckoutSession', () => {
+  const base = () => ({
+    userId: oid(), provider: 'demo', subtotalCents: 1000, shippingCents: 599, totalCents: 1599,
+    items: [{ productId: 'B000TEST01', title: 'Thing', unitPriceCents: 1000, qty: 1 }],
+  });
+
+  it('starts pending and expires on its own', async () => {
+    const session = new CheckoutSession(base());
+    expect(await errorsOf(session)).toEqual({});
+    expect(session.status).toBe('pending');
+    expect(session.expiresAt.getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it('refuses an unknown provider or status', async () => {
+    expect((await errorsOf(new CheckoutSession({ ...base(), provider: 'cash' }))).provider).toBeDefined();
+    expect((await errorsOf(new CheckoutSession({ ...base(), status: 'refunded' }))).status).toBeDefined();
   });
 });
 

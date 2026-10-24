@@ -24,6 +24,8 @@ const schema = z.object({
   // The Gmail address that sends OTP and order emails (the account the refresh token belongs to).
   EMAIL_USER: z.string().optional(),
 
+  // 'demo' simulates payments (no money moves). 'stripe' is reserved and not implemented yet.
+  PAYMENT_PROVIDER: z.enum(['demo', 'stripe']).default('demo'),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
