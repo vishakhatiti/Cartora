@@ -107,7 +107,7 @@ About 11% of products have no reviews. Photos are loaded from Amazon's servers, 
 
 **Guest mode** needs no server state: guests browse and keep a cart in the browser, and the cart is merged on sign-in (cart feature). **Not tried against real services:** Gmail delivery and Google sign-in are covered by automated tests with fakes only; the sign-in page is part of the client work, so there is no button yet.
 
-**Google sign-in setup:** on the same OAuth client, add `https://shop-with-cartora.vercel.app` under *Authorized JavaScript origins*. The Vercel variable `VITE_GOOGLE_CLIENT_ID` (same client ID) is used by the sign-in button later. If an account was registered with a password but never verified, linking Google removes that password, so nobody can take over an email address they do not own.
+**Google sign-in setup:** on the same OAuth client, add `https://shop-at-cartora.vercel.app` under *Authorized JavaScript origins*. The Vercel variable `VITE_GOOGLE_CLIENT_ID` (same client ID) is used by the sign-in button later. If an account was registered with a password but never verified, linking Google removes that password, so nobody can take over an email address they do not own.
 
 ## MongoDB Atlas free tier (512 MB)
 
