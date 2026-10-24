@@ -6,67 +6,69 @@
   Design tokens. Themes are sets of colour tokens chosen with data-theme on <html>. Components use the token
   classes (bg-surface, text-muted, ...) and never hard-code colours, so a theme is one more block here.
   scripts/check-contrast.mjs verifies the contrast of every pair below.
-  Ivory (the default light theme) is a fresh teal, coral and sunshine palette; Night is its dark counterpart.
+  Ivory (the default light theme) is a pastel palette: lavender, mint and peach with a violet accent and a coral call to action. Night is its dark counterpart.
 */
 :root,
 [data-theme='light'] {
-  --bg: #f5f9fb; /* Cool white */
-  --cream: #fbfdfe; /* Header, inputs */
+  --bg: #fbf9ff;
+  --cream: #ffffff;
   --surface: #ffffff;
-  --fg: #14262e;
-  --muted: #4d6670; /* Secondary text. The lighter #858980 fails AA for small text, so it is not used for text. */
-  --primary: #0a7570; /* Teal */
-  --primary-hover: #085e5b; /* Deep teal */
+  --fg: #1f2340;
+  --muted: #555a7c;
+  --primary: #5b3fd6;
+  --primary-hover: #4a31b8;
   --primary-fg: #ffffff;
-  --pale: #dff3f0; /* Pale mint: secondary hover, selected filters */
-  --sage: #5fb3a9;
-  --accent: #f5b335; /* Sunshine: rating stars, highlights */
-  --accent-fg: #1e1606;
-  --line: #dde8ec;
-  --line-strong: #c9d9df;
+  --pale: #eee9ff;
+  --sage: #8fd3c0;
+  --accent: #ffd166;
+  --accent-fg: #2a2000;
+  --line: #e8e4f5;
+  --line-strong: #d6d0ea;
   --ok: #167a42;
-  --warn: #a15c07;
+  --warn: #8f5405;
   --bad: #c0281d;
   --info: #1d6fb8;
-  --hero: #0a3340; /* Deep teal: header and page bands */
-  --hero-fg: #ffffff;
-  --orange: #cc4309; /* active pills, pagination, key calls to action */
+  --hero: #e6defc;
+  --hero-2: #d3f1ea;
+  --hero-fg: #1f2340;
+  --orange: #cf3c26;
   --orange-fg: #ffffff;
-  --peach: #ffe9d9;
-  --coral: #f0806a;
-  --blue: #dbeeff;
-  --lavender: #ece4ff;
-  --butter: #fff0b3;
+  --peach: #ffe5dc;
+  --coral: #ff8f7a;
+  --blue: #d9eeff;
+  --lavender: #eadfff;
+  --butter: #fff2bf;
 }
 
 [data-theme='dark'] {
-  --bg: #0d171b;
-  --cream: #101d22;
-  --surface: #14232a;
-  --fg: #eaf4f6;
-  --muted: #9fb6bd;
-  --primary: #4fd1c5;
-  --primary-hover: #7ee3d9;
-  --primary-fg: #05201d;
-  --pale: #1a3038;
-  --sage: #5fb3a9;
-  --accent: #f5b335;
-  --accent-fg: #1e1606;
-  --line: #23373f;
-  --line-strong: #2f4852;
-  --ok: #52d68a;
-  --warn: #f0b050;
-  --bad: #ff8f84;
-  --info: #6cb8f0;
-  --hero: #071013;
-  --hero-fg: #eaf4f6;
-  --orange: #ff7a3d;
-  --orange-fg: #1d0c04;
-  --peach: #2e2119;
-  --coral: #f0806a;
-  --blue: #17303f;
-  --lavender: #2a2540;
-  --butter: #3a3519;
+  --bg: #12101f;
+  --cream: #171428;
+  --surface: #1c1930;
+  --fg: #f1eeff;
+  --muted: #b3aed3;
+  --primary: #b9a6ff;
+  --primary-hover: #cfc2ff;
+  --primary-fg: #1a1236;
+  --pale: #2a2548;
+  --sage: #7fd8c3;
+  --accent: #ffd166;
+  --accent-fg: #2a2000;
+  --line: #2e2a4c;
+  --line-strong: #3f3a66;
+  --ok: #5fe0a0;
+  --warn: #f5c060;
+  --bad: #ff9a90;
+  --info: #7cc2f5;
+  --hero: #1e1a3d;
+  --hero-2: #143a40;
+  --hero-fg: #f1eeff;
+  --orange: #ff8c6b;
+  --orange-fg: #2a0f08;
+  --peach: #3a2530;
+  --coral: #ff8f7a;
+  --blue: #1b3247;
+  --lavender: #2f2750;
+  --butter: #3d3820;
 }
 
 @theme inline {
@@ -89,6 +91,7 @@
   --color-bad: var(--bad);
   --color-info: var(--info);
   --color-hero: var(--hero);
+  --color-hero-2: var(--hero-2);
   --color-hero-fg: var(--hero-fg);
   --color-orange: var(--orange);
   --color-orange-fg: var(--orange-fg);
