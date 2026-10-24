@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { catalogApi } from '../lib/catalogApi.js';
 import { formatCount, formatDate } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import WishlistButton from '../components/WishlistButton.jsx';
@@ -38,10 +39,18 @@ function AddToCart({ product }) {
   const outOfStock = product.stockQty != null && product.stockQty < 1;
   const cart = useCart();
   const toast = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const add = async () => {
     if (busy) return;
+    if (!user) { // a cart belongs to an account: sign in first, then come back to this product
+      toast.info('Sign in to add items to your cart.');
+      navigate('/sign-in', { state: { from: location.pathname } });
+      return;
+    }
     setBusy(true);
     try {
       await cart.add(product.id, qty);

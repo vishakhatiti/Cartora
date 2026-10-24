@@ -32,8 +32,9 @@ export default function CartPage() {
 
       {cart.status === 'ready' && cart.lines.length === 0 && (
         <section className="mx-auto mt-8 max-w-lg rounded-3xl bg-peach p-8 text-center">
-          <h2 className="text-3xl">Your cart is empty</h2>
-          <p className="mt-2 text-sm text-muted">Find something you like and add it here.</p>
+          <h2 className="text-3xl">{user ? 'Your cart is empty' : 'Sign in to see your cart'}</h2>
+          <p className="mt-2 text-sm text-muted">{user ? 'Find something you like and add it here.' : 'Carts belong to an account. Sign in, then add products to your cart.'}</p>
+          {!user && <Link to="/sign-in" state={{ from: '/cart' }} className="mt-5 mr-2 inline-block rounded-full bg-primary px-6 py-2.5 font-semibold text-primary-fg">Sign in</Link>}
           <Link to="/products" className="mt-5 inline-block rounded-full bg-orange px-6 py-2.5 font-semibold text-orange-fg">Continue shopping</Link>
         </section>
       )}
@@ -70,7 +71,6 @@ export default function CartPage() {
             <button type="button" onClick={checkout} className="mt-5 w-full rounded-full bg-primary px-5 py-3 font-semibold text-primary-fg">
               {user ? 'Proceed to checkout' : 'Sign in to check out'}
             </button>
-            {!user && <p className="mt-2 text-xs text-muted">You can keep shopping as a guest. Your cart is saved in this browser and added to your account when you sign in.</p>}
           </OrderSummary>
         </div>
       )}
