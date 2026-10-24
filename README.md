@@ -159,6 +159,7 @@ Real values are never committed. Copy the example files and fill them in.
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client, used for Google sign-in and the Gmail API |
 | `GOOGLE_REFRESH_TOKEN`, `EMAIL_USER` | Sending email through the Gmail API as this Gmail address |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe test mode |
+| `NODE_OPTIONS` | On Render set `--max-old-space-size=300` (already in `render.yaml`). The catalogue needs about 200 MB of heap to load; peak process memory measured locally was 327 MB with this cap and 386 MB without. The free plan has 512 MB. |
 | `FRONTEND_URL`, `PORT`, `NODE_ENV` | App settings. On Render, `PORT` is set by the platform |
 | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID` | Public client settings |
 
@@ -228,3 +229,13 @@ The JSON catalog is read-only and held in memory; MongoDB stores user data. All 
 | `/api/products/:id/related` | Same-category products at a similar price |
 | `/api/categories` | Categories with product counts |
 | `/api/search/suggestions?q=` | Autocomplete for products and categories |
+
+## Troubleshooting: 502 from `/api/*`
+
+A 502 on the website means Vercel reached Render but got no valid reply. Check in this order:
+
+| Check | What to look for |
+|---|---|
+| Render > Logs | `Catalogue loaded: 12000 products ...` and `Cartora API listening ...` after the latest deploy. The server loads the catalogue before it accepts requests, so a memory or file problem is logged there. |
+| Render > Events | A deploy still running, or the service waking from sleep (free plan, up to about a minute). |
+| `GET https://<render-url>/api/health` | `{"status":"ok"}` means the process is up. |

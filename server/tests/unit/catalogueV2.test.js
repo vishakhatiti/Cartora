@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adaptCatalogueV2, isCatalogueV2 } from '../../src/services/catalog/formats.js';
+import { adaptCatalogueV2, isCatalogueV2, iterateCatalogueV2 } from '../../src/services/catalog/formats.js';
 import { createCatalog } from '../../src/services/catalog/catalog.js';
 
 const img = (n) => ({ thumb: `https://m.media-amazon.com/t${n}.jpg`, large: `https://m.media-amazon.com/l${n}.jpg`, hiRes: `https://m.media-amazon.com/h${n}.jpg` });
@@ -67,5 +67,24 @@ describe('catalogue.json.gz layout', () => {
     expect(r.items[0]).toMatchObject({ rating: 5, reviewer: 'Customer', verifiedPurchase: true, helpfulCount: 3, text: 'Love them' });
     expect(r.items[0].createdAt).toBe('2020-01-02T03:04:05.000Z');
     expect(catalog.getReviews('P2').items).toEqual([]);
+  });
+});
+
+describe('iterateCatalogueV2', () => {
+  it('yields the same records as adaptCatalogueV2', () => {
+    const copy = () => JSON.parse(JSON.stringify(file));
+    expect([...iterateCatalogueV2(copy())]).toEqual(adaptCatalogueV2(copy()));
+  });
+
+  it('with release drops each source product once it has been yielded, so memory can be reclaimed', () => {
+    const source = JSON.parse(JSON.stringify(file));
+    const total = source.products.length;
+    const iterator = iterateCatalogueV2(source, { release: true });
+    const first = iterator.next().value;
+    expect(first.parent_asin).toBeTruthy();
+    expect(source.products[0]).toBeNull();
+    expect(source.products.slice(1).every(Boolean)).toBe(true);
+    expect([...iterator]).toHaveLength(total - 1);
+    expect(source.products.every((p) => p === null)).toBe(true);
   });
 });
