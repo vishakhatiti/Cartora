@@ -3,14 +3,14 @@ import { catalogApi } from '../lib/catalogApi.js';
 import { formatCount } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
 import ProductImage from '../components/ProductImage.jsx';
-import StatusPanel from '../components/StatusPanel.jsx';
-import { ErrorNotice, ProductGrid, ProductGridSkeleton } from '../components/ProductCard.jsx';
+import Shelf from '../components/Shelf.jsx';
+import { SHELVES } from '../lib/shelves.js';
 
 const TILT = ['-rotate-3', 'rotate-2', '-rotate-1'];
 
 export default function HomePage() {
   const cats = useRemote((signal) => catalogApi.categories(signal), []);
-  const top = useRemote((signal) => catalogApi.products({ sort: 'relevance', pageSize: 8 }, signal), []);
+  const top = useRemote((signal) => catalogApi.discover('best-sellers', { pageSize: 3 }, signal), []);
   const shown = top.data?.items ?? [];
 
   return (
@@ -59,20 +59,7 @@ export default function HomePage() {
         )}
       </section>
 
-      <section aria-labelledby="top-h" className="mt-14">
-        <div className="flex items-end justify-between gap-3">
-          <h2 id="top-h" className="text-3xl">Most-rated products</h2>
-          <Link to="/products" className="text-sm font-semibold text-primary hover:underline">See all</Link>
-        </div>
-        <div className="mt-5">
-          {top.status === 'error' && <ErrorNotice error={top.error} onRetry={top.retry} />}
-          {top.status === 'loading' && !top.data && <ProductGridSkeleton count={4} />}
-          {top.data && <ProductGrid items={shown.slice(0, 4)} />}
-        </div>
-      </section>
-
-      <p className="mt-14 text-center text-sm text-muted">Cart, wishlist and payments are being built next.</p>
-      <div className="mx-auto mt-4 max-w-md"><StatusPanel /></div>
+      {SHELVES.map((shelf) => <Shelf key={shelf.slug} shelf={shelf} />)}
     </div>
   );
 }

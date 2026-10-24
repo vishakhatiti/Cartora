@@ -6,6 +6,7 @@ import { isCatalogueV2, iterateCatalogueV2 } from './formats.js';
 
 export const DEFAULT_PAGE_SIZE = 24;
 export const MAX_PAGE_SIZE = 48;
+export const DISCOVER_KINDS = ['trending', 'best-sellers', 'new-releases'];
 export const SORTS = ['relevance', 'price_asc', 'price_desc', 'rating', 'discount'];
 export const REVIEW_SORTS = ['recent', 'highest', 'lowest'];
 
@@ -202,12 +203,50 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
     };
   }
 
+  // Discovery shelves. The data has no sales figures or release dates, so these are ranked from real review
+  // activity only, and each result says what the ranking means. The generated importedRank/isBestSeller are never used.
+  const DAY = 86_400_000;
+  const stamp = (r) => { const t = Date.parse(r.createdAt); return Number.isFinite(t) ? t : null; };
+  const reviewTimes = new Map(products.map((p) => [p.id, p.reviews.map(stamp).filter((t) => t != null)]));
+  let windowEnd = 0;
+  for (const times of reviewTimes.values()) for (const t of times) if (t > windowEnd) windowEnd = t;
+  const BASIS = {
+    trending: 'Ranked by reviews written in the most recent 12 months of the review data.',
+    'best-sellers': 'Most-rated products with an average of 4 stars or more. Sales figures are not available.',
+    'new-releases': 'Products whose first review is the most recent. Release dates are not available.',
+  };
+  const shelves = new Map();
+  function shelf(kind) {
+    if (shelves.has(kind)) return shelves.get(kind);
+    const recent = (p) => reviewTimes.get(p.id).filter((t) => t >= windowEnd - 365 * DAY).length;
+    const first = (p) => Math.min(...reviewTimes.get(p.id));
+    const rules = {
+      trending: { keep: (p) => recent(p) > 0, score: recent },
+      'best-sellers': { keep: (p) => p.ratingAvg >= 4 && p.ratingCount > 0, score: (p) => p.ratingCount },
+      'new-releases': { keep: (p) => reviewTimes.get(p.id).length > 0, score: first },
+    }[kind];
+    const ranked = products.filter(rules.keep).map((p) => [p, rules.score(p)])
+      .sort((a, b) => b[1] - a[1] || b[0].ratingCount - a[0].ratingCount || a[0].id.localeCompare(b[0].id))
+      .map(([p]) => p);
+    shelves.set(kind, ranked);
+    return ranked;
+  }
+
+  function discover(kind, { category, page = 1, pageSize = 12 } = {}) {
+    if (!DISCOVER_KINDS.includes(kind)) return null;
+    const all = shelf(kind).filter((p) => !category || p.category.slug === category);
+    const size = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil(all.length / size));
+    const current = Math.min(Math.max(1, page), totalPages);
+    return { kind, basis: BASIS[kind], items: all.slice((current - 1) * size, current * size).map(toSummary), page: current, pageSize: size, total: all.length, totalPages };
+  }
+
   return {
     size: products.length,
     skipped,
     categories,
     hasCategory: (slug) => categorySlugs.has(slug),
-    search, getById, getDetail, getReviews, getRelated, suggest,
+    search, discover, getById, getDetail, getReviews, getRelated, suggest,
   };
 }
 

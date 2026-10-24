@@ -4,15 +4,18 @@ import { renderApp } from '../test/renderApp.jsx';
 import { stubCatalogFetch } from '../test/catalogFixtures.js';
 
 describe('home page', () => {
-  it('renders the landing content, categories, products and the live API status', async () => {
+  it('renders the landing content, categories, and the Trending, Best sellers and New releases shelves', async () => {
     stubCatalogFetch();
     renderApp();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Shop smarter.');
     const cats = await within(screen.getByRole('main')).findByRole('link', { name: /Electronics/ });
     expect(cats).toHaveAttribute('href', '/products?category=electronics');
-    const top = await screen.findByRole('region', { name: 'Most-rated products' });
-    expect(await within(top).findByRole('link', { name: /Noise-cancelling Headphones/ })).toHaveAttribute('href', '/product/B0TEST0001');
-    expect(await screen.findByText('API online · Database connected')).toBeInTheDocument();
+    for (const [name, path] of [['Trending now', '/trending'], ['Best sellers', '/best-sellers'], ['New releases', '/new-releases']]) {
+      const shelf = await screen.findByRole('region', { name });
+      expect(await within(shelf).findAllByRole('link', { name: /Noise-cancelling Headphones/ })).not.toHaveLength(0);
+      expect(within(shelf).getByRole('link', { name: 'See all' })).toHaveAttribute('href', path);
+    }
+    expect(document.body).not.toHaveTextContent(/API online|Database connected|unreachable/i);
   });
 
   it('has landmark regions, a skip link and a search box', async () => {
@@ -23,15 +26,13 @@ describe('home page', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main');
     expect(within(screen.getByRole('banner')).getByRole('combobox', { name: 'Search products' })).toBeInTheDocument();
-    await screen.findByText('API online · Database connected');
   });
 
-  it('shows an error with a retry button when the catalog cannot load', async () => {
-    stubCatalogFetch({ '/api/products': () => ({ __error: true, status: 500, code: 'ERROR', message: 'Server error.' }) });
-    renderApp();
+  it('shows an error with a retry button when a shelf cannot load', async () => {
+    stubCatalogFetch({ '/api/discover': () => ({ __error: true, status: 500, code: 'ERROR', message: 'Server error.' }) });
+    renderApp({ route: '/trending' });
     expect(await screen.findByRole('alert')).toHaveTextContent('Server error.');
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
-    await screen.findByText('API online · Database connected');
   });
 
   it('shows a 404 page for unknown addresses', async () => {

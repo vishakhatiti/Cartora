@@ -4,6 +4,7 @@ import { catalogApi } from '../lib/catalogApi.js';
 import { useRemote } from '../hooks/useRemote.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import { SHELVES } from '../lib/shelves.js';
 import ModeSwitch from './ModeSwitch.jsx';
 import Footer from './Footer.jsx';
 import NavDrawer from './NavDrawer.jsx';
@@ -58,6 +59,7 @@ function SecondRow() {
         ) : (
           <nav aria-label="Categories" className="min-w-0 flex-1">
             <ul className="flex gap-1 overflow-x-auto">
+              {SHELVES.map((sh) => <li key={sh.slug}><NavLink to={`/${sh.slug}`} className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>{sh.short}</NavLink></li>)}
               <li><NavLink to="/products" end className={({ isActive }) => `${pill} font-semibold ${isActive ? 'bg-hero-fg/10 text-hero-fg' : ''}`}>All products</NavLink></li>
               {items.slice(0, 10).map((c) => (
                 <li key={c.slug}><Link to={`/products?category=${c.slug}`} className={pill}>{c.label}</Link></li>

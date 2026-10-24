@@ -32,7 +32,6 @@ export default function Footer() {
               </>
             )}
             <li><Link className={link} to="/sell">Sell on Cartora</Link></li>
-            <li><a className={link} href="https://github.com/vishakhatiti/Cartora">Built in the open on GitHub</a></li>
           </ul>
         </nav>
       </div>

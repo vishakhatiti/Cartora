@@ -66,31 +66,6 @@ export const sellerApi = {
   me: (signal) => apiFetch('/seller/me', { signal }),
 };
 
-/**
- * Check the API. Returns one of:
- *   'ready'        the API is up and MongoDB is connected
- *   'db_down'      the API is up but MongoDB is not connected
- *   'unreachable'  no usable response (offline, still waking up, or misconfigured)
- */
-export async function fetchApiStatus(signal) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  signal?.addEventListener('abort', () => controller.abort(), { once: true });
-  try {
-    const res = await fetch(`${BASE}/health/ready`, {
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    if (res.ok) return 'ready';
-    if (res.status === 503) return 'db_down';
-    return 'unreachable';
-  } catch {
-    return 'unreachable';
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 const toBody = (items) => ({ items: items.map(({ productId, qty }) => ({ productId, qty })) });
 
 /** Cart, checkout and orders. Totals and prices always come back from the server. */
