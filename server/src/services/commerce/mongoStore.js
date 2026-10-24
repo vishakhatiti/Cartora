@@ -143,7 +143,7 @@ export function createMongoCommerceStore() {
       for (const item of items) {
         if (!item.sellerId || !isValidId(item.sellerId)) continue;
         // One atomic update that clamps at zero. (Two separate steps would zero the stock right after a normal sale.)
-        await Product.updateOne({ asin: item.productId, sellerId: item.sellerId }, [{ $set: { stock: { $max: [0, { $subtract: ['$stock', item.qty] }] } } }]);
+        await Product.updateOne({ asin: item.productId, sellerId: item.sellerId }, [{ $set: { stock: { $max: [0, { $subtract: ['$stock', item.qty] }] } } }], { updatePipeline: true });
         ids.push(item.productId);
       }
       return ids.length ? (await Product.find({ asin: { $in: ids } }).lean()).map(toListing) : [];
