@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { normalizeProduct, toSummary } from './normalize.js';
 
@@ -7,7 +8,8 @@ export const MAX_PAGE_SIZE = 48;
 export const SORTS = ['relevance', 'price_asc', 'price_desc', 'rating', 'discount'];
 export const REVIEW_SORTS = ['recent', 'highest', 'lowest'];
 
-const DATA_PATH = fileURLToPath(new URL('../../../data/data.json', import.meta.url));
+export const DATA_PATH = fileURLToPath(new URL('../../../data/data.json', import.meta.url));
+export const GZ_PATH = fileURLToPath(new URL('../../../data/catalogue.json.gz', import.meta.url));
 
 const tokenize = (text) => String(text ?? '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 
@@ -188,12 +190,22 @@ export function createCatalog(rawProducts) {
 
 let defaultCatalog = null;
 
-/** Loads server/data/data.json once and reuses it. Throws a clear error if the file is unusable. */
+/** Read a catalog file: plain .json or gzip-compressed .json.gz. Throws a clear error if unusable. */
+export function loadCatalogFile(path) {
+  const bytes = readFileSync(path);
+  const text = path.endsWith('.gz') ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8');
+  const parsed = JSON.parse(text);
+  if (!Array.isArray(parsed)) throw new Error(`${path} must contain an array of products`);
+  return createCatalog(parsed);
+}
+
+/**
+ * Loads the catalog once and reuses it. Prefers catalogue.json.gz (built from Amazon Reviews 2023 by
+ * scripts/build_catalog.py) and falls back to the bundled data.json.
+ */
 export function getDefaultCatalog() {
   if (!defaultCatalog) {
-    const parsed = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
-    if (!Array.isArray(parsed)) throw new Error('data.json must contain an array of products');
-    defaultCatalog = createCatalog(parsed);
+    defaultCatalog = loadCatalogFile(existsSync(GZ_PATH) ? GZ_PATH : DATA_PATH);
   }
   return defaultCatalog;
 }

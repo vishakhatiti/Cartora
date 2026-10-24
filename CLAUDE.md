@@ -23,7 +23,7 @@ Cartora is a MERN e-commerce marketplace. Read `ROADMAP.md` for scope, phases an
 3. **Money** is integer cents. Shipping is free at a $50.00 subtotal or more, otherwise $5.99.
 4. **Stripe.** Mark orders paid only from the verified webhook, and make it idempotent on the Checkout session id.
 5. **Auth.** JWT in an httpOnly cookie. OTP codes are HMAC-hashed with a key derived from `JWT_SECRET` (no separate pepper key), expire in 10 minutes and allow 5 attempts.
-6. **Seeded data.** The 12,500 products share one placeholder image URL, so the UI draws generated artwork for them. Do not claim real photos exist.
+6. **Seeded data.** While `server/data/catalogue.json.gz` does not exist, the catalog is `data.json`: 12,500 products sharing one placeholder image URL, so the UI draws generated artwork. Do not claim real photos exist until the gz file is committed.
 7. **Honesty.** Do not say tests pass unless you ran them and read the output. Do not claim a feature is done in `ROADMAP.md` or `README.md` until it works.
 8. **Small steps.** Work in small, testable increments and commit often.
 9. **One branch per feature.** After the base setup, never build a feature directly on `main`. Branch from an up-to-date `main` as `feature/<name>` (names are listed in `ROADMAP.md`), open a pull request when tests pass, then start the next feature from `main`.

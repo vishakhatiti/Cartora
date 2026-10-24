@@ -67,6 +67,23 @@ Amazon is a mature, global platform. This comparison is about design choices, no
 | Images | Every product in the file points to the same placeholder URL, so Cartora draws generated artwork for seeded products. Sellers can supply real image URLs. |
 | Reviews | 37,552 embedded reviews, moved into their own collection. Some review titles and text contradict the star rating; they are imported unchanged. |
 
+## Real product data (Amazon Reviews 2023)
+
+`server/scripts/build_catalog.py` turns downloaded Amazon Reviews 2023 files into `server/data/catalogue.json.gz`: about 13,000 products across up to 24 categories, each with a real Amazon-hosted image, price, rating, features and up to 5 reviews. The server uses that file when it exists and otherwise falls back to `data.json`. Nothing here has been run on the real Amazon files yet; it is tested on small generated samples only.
+
+| Step | What to do |
+|---|---|
+| 1 | Get the files from the [dataset page](https://amazon-reviews-2023.github.io/) or the Hugging Face repo `McAuley-Lab/Amazon-Reviews-2023` (paths `raw/meta_categories/<Category>.jsonl` and `raw/review_categories/<Category>.jsonl`). Put them in one folder. |
+| 2 | Name them `meta_<Category>.jsonl` (or `.jsonl.gz`) and `<Category>.jsonl`. The folders `meta_categories/` and `review_categories/` also work. |
+| 3 | Run `python server/scripts/build_catalog.py --input-dir <folder> --target 13000` (Python 3.9+, no packages needed). |
+| 4 | Commit `server/data/catalogue.json.gz` on a feature branch and open a pull request. |
+
+Some category files are very large. A cut-off download still works: the script stops cleanly at the end of what it can read, and `--max-meta-lines` and `--max-review-lines` limit how much it reads. The sample then comes from the start of each file, not the whole file. Products need a price, an Amazon image, at least 5 ratings and at least 2 collected reviews. The dataset has no deal or stock data, so Cartora does not show any for these products.
+
+Tests: `cd server/scripts && python3 -m unittest discover -s tests`.
+
+**Licence:** the dataset page we checked states no licence. Check the terms on the project site before publishing the derived file in a public repository.
+
 ## Environment variables
 
 Real values are never committed. Copy the example files and fill them in.
