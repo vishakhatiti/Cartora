@@ -140,6 +140,12 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
     return byId.get(id) ?? null;
   }
 
+  /** The listing shape for one product, or null. */
+  function getSummary(id) {
+    const product = byId.get(id);
+    return product ? toSummary(product) : null;
+  }
+
   function getDetail(id) {
     const product = byId.get(id);
     if (!product) return null;
@@ -246,7 +252,7 @@ export function createCatalog(rawProducts, { stockImages = null } = {}) {
     skipped,
     categories,
     hasCategory: (slug) => categorySlugs.has(slug),
-    search, discover, getById, getDetail, getReviews, getRelated, suggest,
+    search, discover, getById, getSummary, getDetail, getReviews, getRelated, suggest,
   };
 }
 

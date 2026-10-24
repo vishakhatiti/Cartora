@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import ProductImage from './ProductImage.jsx';
 import PriceTag from './PriceTag.jsx';
 import Stars from './Stars.jsx';
+import WishlistButton from './WishlistButton.jsx';
 
 export default function ProductCard({ product }) {
   return (
-    <li className="group">
+    <li className="group relative">
+      <WishlistButton productId={product.id} title={product.title} className="absolute right-4 top-4 z-10" />
       <Link
         to={`/product/${product.id}`}
         className="flex h-full flex-col rounded-3xl bg-peach p-2.5 ring-2 ring-transparent transition duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-orange"

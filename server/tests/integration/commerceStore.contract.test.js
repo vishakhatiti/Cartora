@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { createMemoryCommerceStore } from '../../src/services/commerce/memoryStore.js';
 import { createMongoCommerceStore } from '../../src/services/commerce/mongoStore.js';
-import { Cart, CheckoutSession, Order } from '../../src/models/index.js';
+import { Cart, CheckoutSession, Order, Wishlist } from '../../src/models/index.js';
 
 // Same behaviour tests for the in-memory store (always) and real MongoDB (when MONGO_TEST_URL is set, as in CI).
 const MONGO_TEST_URL = process.env.MONGO_TEST_URL;
@@ -10,7 +10,7 @@ const targets = [
   { name: 'memory store', make: async () => createMemoryCommerceStore(), newUserId: () => `user-${Math.random()}` },
   ...(MONGO_TEST_URL ? [{
     name: 'MongoDB store',
-    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({})]); return createMongoCommerceStore(); },
+    make: async () => { await Promise.all([Cart.deleteMany({}), CheckoutSession.deleteMany({}), Order.deleteMany({}), Wishlist.deleteMany({})]); return createMongoCommerceStore(); },
     newUserId: () => String(new mongoose.Types.ObjectId()),
   }] : []),
 ];
@@ -18,7 +18,7 @@ const targets = [
 beforeAll(async () => {
   if (MONGO_TEST_URL) {
     await mongoose.connect(MONGO_TEST_URL, { serverSelectionTimeoutMS: 15000 });
-    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init()]);
+    await Promise.all([Cart.init(), CheckoutSession.init(), Order.init(), Wishlist.init()]);
   }
 });
 afterAll(async () => { if (MONGO_TEST_URL) await mongoose.disconnect(); });
@@ -38,6 +38,15 @@ const orderData = (session, number = 'CRT-AAAAAAAA') => ({
 describe.each(targets)('commerce store contract: $name', ({ make, newUserId }) => {
   let store; let userId;
   beforeEach(async () => { store = await make(); userId = newUserId(); });
+
+  it('stores a wishlist as ordered catalogue ids per user and clears it when emptied', async () => {
+    expect(await store.getWishlistIds(userId)).toEqual([]);
+    await store.setWishlistIds(userId, ['B2', 'A1']);
+    expect(await store.getWishlistIds(userId)).toEqual(['B2', 'A1']);
+    expect(await store.getWishlistIds(newUserId())).toEqual([]);
+    await store.setWishlistIds(userId, []);
+    expect(await store.getWishlistIds(userId)).toEqual([]);
+  });
 
   it('keeps a cart per user as ids and quantities, and empties it', async () => {
     expect(await store.getCartItems(userId)).toEqual([]);

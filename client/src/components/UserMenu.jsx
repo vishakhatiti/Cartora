@@ -58,6 +58,9 @@ export default function UserMenu() {
           <Link role="menuitem" to="/account" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
             Your account
           </Link>
+          <Link role="menuitem" to="/wishlist" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
+            Wishlist
+          </Link>
           <button role="menuitem" type="button" onClick={handleSignOut} className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-bg">
             Sign out
           </button>

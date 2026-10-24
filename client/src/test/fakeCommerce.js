@@ -27,9 +27,11 @@ export function fakeCommerce(overrides = {}) {
   let serverItems = [];
   const sessions = new Map();
   const orders = new Map();
+  let wishIds = [];
+  const wishOf = () => ({ wishlist: { ids: [...wishIds], count: wishIds.length, items: wishIds.map((id) => ({ id, title: PRICES[id]?.title ?? id, brand: PRICES[id]?.brand ?? '', category: { slug: 'electronics', label: 'Electronics' }, priceCents: PRICES[id]?.priceCents ?? 100, finalPriceCents: PRICES[id]?.priceCents ?? 100, deal: null, images: [], ratingAvg: 4, ratingCount: 1 })) } });
   const cartOf = () => ({ cart: price(serverItems) });
   const api = {
-    state: { get items() { return serverItems; }, sessions, orders },
+    state: { get items() { return serverItems; }, get wishlist() { return wishIds; }, sessions, orders },
     quote: vi.fn((items) => Promise.resolve({ cart: price(items) })),
     getCart: vi.fn(() => Promise.resolve(cartOf())),
     setQuantity: vi.fn((productId, qty) => {
@@ -45,6 +47,9 @@ export function fakeCommerce(overrides = {}) {
       }
       return Promise.resolve({ ...cartOf(), merged: items.length - skipped.length, skipped });
     }),
+    getWishlist: vi.fn(() => Promise.resolve(wishOf())),
+    addWishlist: vi.fn((id) => { wishIds = [id, ...wishIds.filter((x) => x !== id)]; return Promise.resolve(wishOf()); }),
+    removeWishlist: vi.fn((id) => { wishIds = wishIds.filter((x) => x !== id); return Promise.resolve(wishOf()); }),
     checkoutConfig: vi.fn(() => Promise.resolve({ provider: 'demo', demo: true, label: 'Demo Mode — No Real Money Charged' })),
     startCheckout: vi.fn((address) => {
       const cart = price(serverItems);

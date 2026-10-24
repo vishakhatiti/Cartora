@@ -42,6 +42,11 @@ export default function NavDrawer({ open, onClose }) {
           <h2 id="dw-browse" className="px-3 pb-1 font-sans text-xs font-bold uppercase tracking-wide text-muted">Browse</h2>
           <Link to="/" onClick={onClose} className={item}>Home</Link>
           <Link to="/products" onClick={onClose} className={item}>All products</Link>
+          <Link to="/trending" onClick={onClose} className={item}>Trending now</Link>
+          <Link to="/best-sellers" onClick={onClose} className={item}>Best sellers</Link>
+          <Link to="/new-releases" onClick={onClose} className={item}>New releases</Link>
+          <Link to="/wishlist" onClick={onClose} className={item}>Wishlist</Link>
+          <Link to="/cart" onClick={onClose} className={item}>Cart</Link>
         </section>
 
         <section aria-labelledby="dw-cats">

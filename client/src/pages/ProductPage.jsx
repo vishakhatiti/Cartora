@@ -5,6 +5,7 @@ import { formatCount, formatDate } from '../lib/format.js';
 import { useRemote } from '../hooks/useRemote.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import WishlistButton from '../components/WishlistButton.jsx';
 import QtyStepper from '../components/QtyStepper.jsx';
 import ProductImage from '../components/ProductImage.jsx';
 import PriceTag from '../components/PriceTag.jsx';
@@ -56,6 +57,7 @@ function AddToCart({ product }) {
       <button type="button" onClick={add} disabled={busy} className="rounded-full bg-orange px-7 py-3 font-semibold text-orange-fg disabled:opacity-60">
         {busy ? 'Adding…' : 'Add to cart'}
       </button>
+      <WishlistButton productId={product.id} title={product.title} label className="border border-line-strong" />
     </div>
   );
 }

@@ -255,3 +255,48 @@ describe('order page', () => {
     expect(document.body).not.toHaveTextContent(/stripe/i);
   });
 });
+
+describe('wishlist', () => {
+  it('asks a guest to sign in instead of saving', async () => {
+    stubProduct();
+    renderApp({ route: '/product/B0TEST0001' });
+    await userEvent.click(await screen.findByRole('button', { name: /Save .* to wishlist/ }));
+    expect(await screen.findByRole('heading', { name: /welcome back|sign in/i })).toBeInTheDocument();
+  });
+
+  it('saves after the server confirms, shows it on the wishlist page and can move it to the cart', async () => {
+    stubProduct();
+    const commerce = fakeCommerce();
+    renderApp({ route: '/product/B0TEST0001', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: /Save .* to wishlist/ }));
+    expect(await screen.findByText('Saved to your wishlist.')).toBeInTheDocument();
+    expect(commerce.state.wishlist).toEqual(['B0TEST0001']);
+    expect(screen.getByRole('button', { name: /Remove .* from wishlist/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('lists saved products and moves one to the cart', async () => {
+    const commerce = fakeCommerce();
+    await commerce.addWishlist('B0TEST0001');
+    renderApp({ route: '/wishlist', api: signedIn(), commerce });
+    const list = await screen.findByRole('list', { name: 'Saved products' });
+    expect(within(list).getByText('Noise-cancelling Headphones')).toBeInTheDocument();
+    await userEvent.click(within(list).getByRole('button', { name: 'Move to cart' }));
+    expect(await screen.findByRole('heading', { name: 'Nothing saved yet' })).toBeInTheDocument();
+    expect(commerce.state.items).toEqual([{ productId: 'B0TEST0001', qty: 1 }]);
+    expect(commerce.state.wishlist).toEqual([]);
+  });
+
+  it('shows an empty state and requires sign-in', async () => {
+    renderApp({ route: '/wishlist', api: signedIn() });
+    expect(await screen.findByRole('heading', { name: 'Nothing saved yet' })).toBeInTheDocument();
+  });
+
+  it('does not change the heart when the server refuses', async () => {
+    stubProduct();
+    const commerce = fakeCommerce({ addWishlist: vi.fn().mockRejectedValue(new ApiError(409, 'WISHLIST_FULL', 'Your wishlist is full.')) });
+    renderApp({ route: '/product/B0TEST0001', api: signedIn(), commerce });
+    await userEvent.click(await screen.findByRole('button', { name: /Save .* to wishlist/ }));
+    expect(await screen.findByText('Your wishlist is full.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Save .* to wishlist/ })).toHaveAttribute('aria-pressed', 'false');
+  });
+});

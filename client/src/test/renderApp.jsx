@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App.jsx';
 import { AuthProvider } from '../context/AuthContext.jsx';
 import { ToastProvider } from '../context/ToastContext.jsx';
+import { WishlistProvider } from '../context/WishlistContext.jsx';
 import { CartProvider } from '../context/CartContext.jsx';
 import { ApiError } from '../lib/api.js';
 import { fakeCommerce } from './fakeCommerce.js';
@@ -37,7 +38,9 @@ export function renderApp({ route = '/', api = fakeApi(), commerce = fakeCommerc
       <ToastProvider>
         <AuthProvider api={api}>
           <CartProvider api={commerce}>
-            <App />
+            <WishlistProvider api={commerce}>
+              <App />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </ToastProvider>

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Cart } from '../../models/Cart.js';
 import { CheckoutSession } from '../../models/CheckoutSession.js';
 import { Order } from '../../models/Order.js';
+import { Wishlist } from '../../models/Wishlist.js';
 
 const isValidId = (id) => mongoose.isValidObjectId(id) && String(new mongoose.Types.ObjectId(String(id))) === String(id);
 
@@ -36,6 +37,18 @@ export function createMongoCommerceStore() {
       if (items.length === 0) await Cart.deleteOne({ userId });
       else await Cart.findOneAndUpdate({ userId }, { $set: { items } }, { upsert: true, runValidators: true });
       return items;
+    },
+
+    async getWishlistIds(userId) {
+      if (!isValidId(userId)) return [];
+      const doc = await Wishlist.findOne({ userId }).lean();
+      return [...(doc?.productIds ?? [])];
+    },
+    async setWishlistIds(userId, ids) {
+      if (!isValidId(userId)) return [];
+      if (ids.length === 0) await Wishlist.deleteOne({ userId });
+      else await Wishlist.findOneAndUpdate({ userId }, { $set: { productIds: ids } }, { upsert: true, runValidators: true });
+      return ids;
     },
 
     async createSession(data) {
